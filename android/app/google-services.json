@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "331475033786",
+    "project_id": "plantguard-ai-14e41",
+    "storage_bucket": "plantguard-ai-14e41.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:331475033786:android:c0e1b6f827b295a4386c83",
+        "android_client_info": {
+          "package_name": "com.example.plantguard_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLQjuNt6YN3jvrhYvWP82x1KavYO_okJg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
