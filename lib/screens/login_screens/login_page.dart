@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/gestures.dart';
+
 import 'signup.dart';
+import '/screens/home_page.dart';
+
 import '/bloc/auth_bloc.dart';
 import '/bloc/auth_event.dart';
 import '/bloc/auth_state.dart';
@@ -35,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
             if (state is AuthSuccess) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
+                MaterialPageRoute(builder: (context) => HomePage()),
               );
             }
           },

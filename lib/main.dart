@@ -13,6 +13,8 @@ import 'screens/login_screens/login_page.dart';
 import 'screens/login_screens/signup.dart';
 import 'screens/login_screens/welcome_page.dart';
 
+import 'screens/home_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
           '/welcome': (context) => WelcomePage(),
           '/login': (context) => LoginPage(),
           '/signup': (context) => SignUpPage(),
-          // '/home': (context) => HomeScreen(), // ← Replace with your actual home screen
+          '/home': (context) => HomePage(),
         },
         builder: (context, child) {
           return StreamBuilder<User?>(

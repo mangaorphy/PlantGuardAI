@@ -267,7 +267,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/login'),
+                        onPressed: () => Navigator.pushNamed(context, '/home'),
                         child: Text(
                           "Log In",
                           style: TextStyle(color: Colors.green),
