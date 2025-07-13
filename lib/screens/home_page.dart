@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plantguard_ai/screens/disease_analysis.dart';
+import 'dart:io';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,19 +21,52 @@ class _HomePageState extends State<HomePage> {
     const Center(child: Text('Profile Page')), // Placeholder for Profile
   ];
 
-  Future<void> _takePhoto() async {
+  Future<void> _showImageSourceDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Image Source'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                GestureDetector(
+                  child: const Text('Take Photo'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                const Padding(padding: EdgeInsets.all(8.0)),
+                GestureDetector(
+                  child: const Text('Choose from Gallery'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     setState(() => _isLoading = true);
     
     try {
       final ImagePicker picker = ImagePicker();
       final pickedFile = await picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         maxWidth: 800,
         maxHeight: 800,
         imageQuality: 85,
       );
 
       if (pickedFile != null) {
+        final imageFile = File(pickedFile.path); // Create File object
         // Here you would typically call your ML model API
         // For now, we'll simulate a result after 2 seconds
         await Future.delayed(const Duration(seconds: 2));
@@ -48,12 +81,12 @@ class _HomePageState extends State<HomePage> {
               confidenceScore: 97.5,
               symptoms: ['water-soaked', 'linear lesions'],
               diseaseDescription: 'Symptoms of bacterial leaf streak are tan, brown, or orange lesions that occur between the veins of the corn leaves.',
+              imageFile: imageFile, // Pass the image file
             ),
           ),
         );
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
@@ -143,7 +176,7 @@ class HomeContent extends StatelessWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      (context.findAncestorStateOfType<_HomePageState>()?._takePhoto());
+                      (context.findAncestorStateOfType<_HomePageState>()?._showImageSourceDialog());
                     },
                     style: ElevatedButton.styleFrom(
                       shape: const CircleBorder(),
