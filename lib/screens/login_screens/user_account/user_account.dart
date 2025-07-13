@@ -1,28 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '/bloc/auth_bloc.dart';
-import '/bloc/auth_event.dart';
-import '/bloc/auth_state.dart';
-
-void main() {
-  runApp(const UserAccountApp());
-}
-
-class UserAccountApp extends StatelessWidget {
-  const UserAccountApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF1E1E1E),
-        primaryColor: Colors.green,
-      ),
-      home: const ProfileScreen(),
-    );
-  }
-}
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -77,12 +53,16 @@ class ProfileScreen extends StatelessWidget {
                   const Spacer(),
                   TextButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.edit, size: 16, color: Colors.white70),
+                    icon: const Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: Colors.white70,
+                    ),
                     label: const Text(
                       'Edit Profile',
                       style: TextStyle(color: Colors.white70),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -92,7 +72,10 @@ class ProfileScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('My Order', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'My Order',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -101,10 +84,22 @@ class ProfileScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  OrderIcon(icon: Icons.hourglass_empty, label: 'Pending\nPayment'),
-                  OrderIcon(icon: Icons.local_shipping, label: 'In Transit\n(Shipping)'),
-                  OrderIcon(icon: Icons.pending_actions, label: 'Pending\nFeedback'),
-                  OrderIcon(icon: Icons.assignment_return, label: 'Return &\nRefund'),
+                  OrderIcon(
+                    icon: Icons.hourglass_empty,
+                    label: 'Pending\nPayment',
+                  ),
+                  OrderIcon(
+                    icon: Icons.local_shipping,
+                    label: 'In Transit\n(Shipping)',
+                  ),
+                  OrderIcon(
+                    icon: Icons.pending_actions,
+                    label: 'Pending\nFeedback',
+                  ),
+                  OrderIcon(
+                    icon: Icons.assignment_return,
+                    label: 'Return &\nRefund',
+                  ),
                 ],
               ),
             ),
@@ -118,10 +113,30 @@ class ProfileScreen extends StatelessWidget {
             const Divider(color: Colors.white24, height: 30),
 
             // Secondary List
-            _buildListItem(context, Icons.location_on, 'Address Management', showImages: false),
-            _buildListItem(context, Icons.headset_mic, 'Customer Center', showImages: false),
-            _buildListItem(context, Icons.person_add, 'Invite Friend', showImages: false),
-            _buildListItem(context, Icons.chat, 'Friend Code', showImages: false),
+            _buildListItem(
+              context,
+              Icons.location_on,
+              'Address Management',
+              showImages: false,
+            ),
+            _buildListItem(
+              context,
+              Icons.headset_mic,
+              'Customer Center',
+              showImages: false,
+            ),
+            _buildListItem(
+              context,
+              Icons.person_add,
+              'Invite Friend',
+              showImages: false,
+            ),
+            _buildListItem(
+              context,
+              Icons.chat,
+              'Friend Code',
+              showImages: false,
+            ),
           ],
         ),
       ),
@@ -132,49 +147,50 @@ class ProfileScreen extends StatelessWidget {
         currentIndex: 2, // Profile is selected
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
             label: 'Wishlist',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
   }
 
-  Widget _buildListItem(BuildContext context, IconData icon, String title, {bool showImages = true}) {
+  Widget _buildListItem(
+    BuildContext context,
+    IconData icon,
+    String title, {
+    bool showImages = true,
+  }) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: showImages
           ? SizedBox(
-        width: 120,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: List.generate(4, (index) {
-            return Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: Image.network(
-                'https://placehold.co/30x30/7CFC00/FFFFFF?text=P${index + 1}',
-                width: 30,
-                height: 30,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.image, size: 30);
-                },
+              width: 120,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: List.generate(4, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 4.0),
+                    child: Image.network(
+                      'https://placehold.co/30x30/7CFC00/FFFFFF?text=P${index + 1}',
+                      width: 30,
+                      height: 30,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.image, size: 30);
+                      },
+                    ),
+                  );
+                }),
               ),
-            );
-          }),
-        ),
-      )
+            )
           : const Icon(Icons.chevron_right, color: Colors.white),
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(context, '/profile');
+      },
     );
   }
 }
@@ -183,11 +199,7 @@ class OrderIcon extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const OrderIcon({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
+  const OrderIcon({super.key, required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {

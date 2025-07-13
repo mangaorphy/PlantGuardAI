@@ -85,10 +85,7 @@ class _WelcomePageState extends State<WelcomePage> {
               },
               child: Text(
                 "PlantGuard",
-                style: TextStyle(
-                  color: Colors.greenAccent,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.greenAccent, fontSize: 16),
               ),
             ),
           ],
