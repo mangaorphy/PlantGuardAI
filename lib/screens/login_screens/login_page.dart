@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
             if (state is AuthSuccess) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
               );
             }
           },
