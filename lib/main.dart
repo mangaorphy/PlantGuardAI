@@ -12,7 +12,6 @@ import 'services/firestore_service.dart';
 import 'screens/login_screens/login_page.dart';
 import 'screens/login_screens/signup.dart';
 import 'screens/login_screens/welcome_page.dart';
-import 'screens/login_screens/user_account/user_account.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +40,6 @@ class MyApp extends StatelessWidget {
           '/welcome': (context) => WelcomePage(),
           '/login': (context) => LoginPage(),
           '/signup': (context) => SignUpPage(),
-          '/profile': (context) => ProfileScreen(),
           // '/home': (context) => HomeScreen(), // ← Replace with your actual home screen
         },
         builder: (context, child) {
@@ -53,11 +51,7 @@ class MyApp extends StatelessWidget {
                 if (user != null) {
                   // If already logged in, redirect to home
                   Future.microtask(() {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/home',
-                      (route) => false,
-                    );
+                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
                   });
                 }
               }
