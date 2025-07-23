@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:plantguard_ai/screens/disease_analysis.dart';
+// import 'package:plantguard_ai/screens/disease_analysis.dart';
 import 'dart:io';
+
+import 'package:plantguard_ai/screens/plant_analysis/ui/plant_analysis.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -75,13 +77,13 @@ class _HomePageState extends State<HomePage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DiseaseAnalysisScreen(
+            builder: (context) => PlantAnalysis(
               plantName: 'Corn (Dracaena fragrans)',
               diseaseName: 'bacteria leaf streak',
               confidenceScore: 97.5,
               symptoms: ['water-soaked', 'linear lesions'],
               diseaseDescription: 'Symptoms of bacterial leaf streak are tan, brown, or orange lesions that occur between the veins of the corn leaves.',
-              imageFile: imageFile, // Pass the image file
+              imageFile: 'assets/down.jpeg', // Pass the image file
             ),
           ),
         );
