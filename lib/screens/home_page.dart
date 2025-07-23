@@ -6,9 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:plantguard_ai/screens/plant_analysis/ui/plant_analysis.dart';
 import 'dart:convert'; // for jsonDecode
 
+import 'package:plantguard_ai/screens/plant_analysis/ui/plant_analysis.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -60,57 +60,80 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-Future<void> _pickImage(ImageSource source) async {
-  setState(() => _isLoading = true);
+  Future<void> _pickImage(ImageSource source) async {
+    setState(() => _isLoading = true);
 
-  try {
-    final ImagePicker picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: source,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 85,
-    );
-
-    // ✅ Handle case where user cancels image picking
-    if (pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Image picking cancelled.')),
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
       );
-      return;
-    }
 
-    final imageFile = File(pickedFile.path);
-    final fileName = path.basename(imageFile.path);
-    final mimeType = lookupMimeType(imageFile.path) ?? 'application/octet-stream';
-    final fileSize = await imageFile.length();
+      if (pickedFile == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image picking cancelled.')),
+        );
+        return;
+      }
 
-    final uri = Uri.parse('https://sng-4.onrender.com/webhook-test/ae669c75-11b9-4ef6-af73-47c175e64d3a');
+      final imageFile = File(pickedFile.path);
+      final fileName = path.basename(imageFile.path);
+      final mimeType =
+          lookupMimeType(imageFile.path) ?? 'image/jpeg'; // default fallback
+      final fileSize = await imageFile.length();
 
-    final request = http.MultipartRequest('POST', uri)
-      ..fields['filename'] = fileName
-      ..fields['mimetype'] = mimeType
-      ..fields['size'] = fileSize.toString()
-      ..fields['submittedAt'] = DateTime.now().toIso8601String()
-      ..fields['formMode'] = 'test'
-      ..files.add(await http.MultipartFile.fromPath(
-        'data',
-        imageFile.path,
-        contentType: MediaType.parse(mimeType),
-        filename: fileName,
-      ));
+      final uri = Uri.parse(
+        'https://sng404.onrender.com/webhook-test/ae669c75-11b9-4ef6-af73-47c175e64d3a',
+      );
 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['filename'] = fileName
+        ..fields['mimetype'] = mimeType
+        ..fields['size'] = fileSize.toString()
+        ..fields['submittedAt'] = DateTime.now().toIso8601String()
+        // ..fields['formMode'] = 'test'
+        ..files.add(
+          await http.MultipartFile.fromPath(
+            'data',
+            imageFile.path,
+            contentType: MediaType.parse(mimeType),
+            filename: fileName,
+          ),
+        );
 
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
-      if (body is List && body.isNotEmpty) {
-        if (body[0] is String) {
-          throw Exception(body[0]);
-        } else if (body[0] is Map) {
-          final result = body[0];
+      print('Raw response.body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+
+        if (body is List &&
+            body.isNotEmpty &&
+            body[0] is Map<String, dynamic>) {
+          final result = body[0]['json'];
+
+          final confidence =
+              double.tryParse(
+                (result['confidenceScore'] ?? '0').replaceAll('%', ''),
+              ) ??
+              0;
+
+          // 🛠️ Parse symptoms from either string or list
+          final dynamic symptomsRaw = result['symptomsIdentified'];
+          List<String> symptoms = [];
+
+          if (symptomsRaw is List) {
+            symptoms = List<String>.from(symptomsRaw);
+          } else if (symptomsRaw is String) {
+            symptoms = RegExp(
+              r"'([^']+)'",
+            ).allMatches(symptomsRaw).map((m) => m.group(1)!).toList();
+          }
 
           Navigator.push(
             context,
@@ -118,32 +141,32 @@ Future<void> _pickImage(ImageSource source) async {
               builder: (context) => PlantAnalysis(
                 plantName: result['plantName'] ?? 'Unknown',
                 diseaseName: result['diseaseName'] ?? 'Unknown',
-                confidenceScore: double.tryParse(result['confidenceScore'].toString()) ?? 0,
-                symptoms: List<String>.from(jsonDecode(result['symptomsIdentified'] ?? '[]')),
+                confidenceScore: confidence,
+                symptoms: RegExp(r"'([^']+)'")
+                    .allMatches(result['symptomsIdentified'] ?? '')
+                    .map((m) => m.group(1)!)
+                    .toList(),
                 diseaseDescription: result['shortDiseaseDescrition'] ?? '',
-                imageFile: result['imageURL'] ?? '', // 🟩 Safe even if empty
+                imageFile: result['imageUrl'] ?? '',
               ),
             ),
           );
+        } else {
+          throw Exception('Unexpected or empty response format.');
         }
       } else {
-        throw Exception('Unexpected response format');
+        throw Exception('API Error: ${response.statusCode} - ${response.body}');
       }
-    } else {
-      throw Exception('API Error: ${response.statusCode}');
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: ${e.toString()}')),
-    );
-  } finally {
-    if (mounted) {
-      setState(() => _isLoading = false);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +185,10 @@ Future<void> _pickImage(ImageSource source) async {
               hintText: 'Start your search',
               prefixIcon: Icon(Icons.search),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 15,
+                horizontal: 20,
+              ),
             ),
           ),
         ),
@@ -170,10 +196,7 @@ Future<void> _pickImage(ImageSource source) async {
       body: Stack(
         children: [
           _pages[_currentIndex],
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -185,18 +208,12 @@ Future<void> _pickImage(ImageSource source) async {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home), 
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
             label: 'Wishlist',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         selectedItemColor: Colors.green[800],
         unselectedItemColor: Colors.grey,
@@ -224,19 +241,28 @@ class HomeContent extends StatelessWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      (context.findAncestorStateOfType<_HomePageState>()?._showImageSourceDialog());
+                      (context
+                          .findAncestorStateOfType<_HomePageState>()
+                          ?._showImageSourceDialog());
                     },
                     style: ElevatedButton.styleFrom(
                       shape: const CircleBorder(),
                       backgroundColor: Colors.green[800],
                       padding: const EdgeInsets.all(20),
                     ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 50),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 50,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Scan Plant',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -252,9 +278,9 @@ class HomeContent extends StatelessWidget {
             const Text(
               'Pesticides',
               style: TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold, 
-                color: Colors.white
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 10),
@@ -281,9 +307,9 @@ class HomeContent extends StatelessWidget {
             const Text(
               'Fertilizers',
               style: TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold, 
-                color: Colors.white
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 10),
@@ -310,9 +336,9 @@ class HomeContent extends StatelessWidget {
             const Text(
               'Products',
               style: TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold, 
-                color: Colors.white
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 10),
@@ -343,9 +369,7 @@ class HomeContent extends StatelessWidget {
   static Widget _buildLatestItemCard(String title) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
         height: 200,
@@ -376,7 +400,10 @@ class HomeContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green[800],
                       borderRadius: BorderRadius.circular(4),
@@ -416,7 +443,11 @@ class HomeContent extends StatelessWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.amber, size: 16),
+                              const Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                                size: 16,
+                              ),
                               const SizedBox(width: 4),
                               const Text(
                                 '4.8',
@@ -445,14 +476,16 @@ class HomeContent extends StatelessWidget {
       ),
     );
   }
-  
-  static Widget _buildHorizontalProductCard(String title, String price, String rating) {
+
+  static Widget _buildHorizontalProductCard(
+    String title,
+    String price,
+    String rating,
+  ) {
     return Card(
       elevation: 3,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -477,8 +510,8 @@ class HomeContent extends StatelessWidget {
                 Text(
                   price,
                   style: const TextStyle(
-                    color: Colors.green, 
-                    fontWeight: FontWeight.bold
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 5),

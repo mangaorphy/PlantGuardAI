@@ -22,8 +22,12 @@ class PlantAnalysis extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    print('Displaying: $plantName, $diseaseName, $confidenceScore, $imageFile');
+
+
     return BaseScaffold(
-      title: 'Disease Analysis',
+      title: 'Plant Analysis',
       currentIndex: 0,
       onTabChange: (index) {
         // Handle navigation
@@ -46,11 +50,13 @@ class PlantAnalysis extends StatelessWidget {
       },
       body: Stack(
         children: [
-          Image.asset(
+          Image.network(
             imageFile,
             width: double.infinity,
             height: 300,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                const Center(child: Icon(Icons.broken_image, size: 60, color: Colors.white)),
           ),
           SingleChildScrollView(
             padding: const EdgeInsets.only(top: 250),
