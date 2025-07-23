@@ -47,7 +47,7 @@ class PlantAnalysis extends StatelessWidget {
       body: Stack(
         children: [
           Image.asset(
-            'assets/down.jpeg',
+            imageFile,
             width: double.infinity,
             height: 300,
             fit: BoxFit.cover,

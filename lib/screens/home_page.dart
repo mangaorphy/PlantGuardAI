@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 // import 'package:plantguard_ai/screens/disease_analysis.dart';
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:plantguard_ai/screens/plant_analysis/ui/plant_analysis.dart';
+import 'dart:convert'; // for jsonDecode
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -55,49 +60,90 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final ImagePicker picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        source: source,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 85,
-      );
+Future<void> _pickImage(ImageSource source) async {
+  setState(() => _isLoading = true);
 
-      if (pickedFile != null) {
-        final imageFile = File(pickedFile.path); // Create File object
-        // Here you would typically call your ML model API
-        // For now, we'll simulate a result after 2 seconds
-        await Future.delayed(const Duration(seconds: 2));
-        
-        // Navigate to results screen with simulated data
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PlantAnalysis(
-              plantName: 'Corn (Dracaena fragrans)',
-              diseaseName: 'bacteria leaf streak',
-              confidenceScore: 97.5,
-              symptoms: ['water-soaked', 'linear lesions'],
-              diseaseDescription: 'Symptoms of bacterial leaf streak are tan, brown, or orange lesions that occur between the veins of the corn leaves.',
-              imageFile: 'assets/down.jpeg', // Pass the image file
-            ),
-          ),
-        );
-      }
-    } catch (e) {
+  try {
+    final ImagePicker picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: source,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+
+    // ✅ Handle case where user cancels image picking
+    if (pickedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        const SnackBar(content: Text('Image picking cancelled.')),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
+      return;
+    }
+
+    final imageFile = File(pickedFile.path);
+    final fileName = path.basename(imageFile.path);
+    final mimeType = lookupMimeType(imageFile.path) ?? 'application/octet-stream';
+    final fileSize = await imageFile.length();
+
+    final uri = Uri.parse('https://sng-4.onrender.com/webhook-test/ae669c75-11b9-4ef6-af73-47c175e64d3a');
+
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['filename'] = fileName
+      ..fields['mimetype'] = mimeType
+      ..fields['size'] = fileSize.toString()
+      ..fields['submittedAt'] = DateTime.now().toIso8601String()
+      ..fields['formMode'] = 'test'
+      ..files.add(await http.MultipartFile.fromPath(
+        'data',
+        imageFile.path,
+        contentType: MediaType.parse(mimeType),
+        filename: fileName,
+      ));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+
+      if (body is List && body.isNotEmpty) {
+        if (body[0] is String) {
+          throw Exception(body[0]);
+        } else if (body[0] is Map) {
+          final result = body[0];
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlantAnalysis(
+                plantName: result['plantName'] ?? 'Unknown',
+                diseaseName: result['diseaseName'] ?? 'Unknown',
+                confidenceScore: double.tryParse(result['confidenceScore'].toString()) ?? 0,
+                symptoms: List<String>.from(jsonDecode(result['symptomsIdentified'] ?? '[]')),
+                diseaseDescription: result['shortDiseaseDescrition'] ?? '',
+                imageFile: result['imageURL'] ?? '', // 🟩 Safe even if empty
+              ),
+            ),
+          );
+        }
+      } else {
+        throw Exception('Unexpected response format');
       }
+    } else {
+      throw Exception('API Error: ${response.statusCode}');
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: ${e.toString()}')),
+    );
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
