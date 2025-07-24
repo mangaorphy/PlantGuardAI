@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  currency_converter_pro
   file_selector_linux
 )
 

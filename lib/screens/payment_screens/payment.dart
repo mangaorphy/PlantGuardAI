@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'successful.dart';
+import '/screens/payment_screens/successfulpayment.dart';
 
 class PaymentScreen extends StatelessWidget {
   @override

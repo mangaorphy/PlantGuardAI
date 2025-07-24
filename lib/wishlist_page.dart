@@ -6,7 +6,7 @@ import 'providers/currency_provider.dart';
 import 'providers/theme_provider.dart';
 import 'product_detail_page.dart';
 import 'screens/profile/profile_page.dart';
-import 'screens/home/home_page.dart';
+import '/screens/home_page.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});

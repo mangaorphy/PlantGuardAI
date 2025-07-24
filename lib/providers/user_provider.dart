@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:io';
-import '../models/user_model.dart';
+import '/ui/models/user_model.dart';
 import 'theme_provider.dart';
 import 'currency_provider.dart';
 
