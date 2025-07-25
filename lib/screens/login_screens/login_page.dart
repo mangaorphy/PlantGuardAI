@@ -6,6 +6,7 @@ import '/bloc/auth_bloc.dart';
 import '/bloc/auth_event.dart';
 import '/bloc/auth_state.dart';
 import 'user_account/user_account.dart';
+import '/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -36,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
             if (state is AuthSuccess) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
+                MaterialPageRoute(builder: (context) => HomePage()),
               );
             }
           },

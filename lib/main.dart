@@ -18,6 +18,7 @@ import 'screens/login_screens/login_page.dart';
 import 'screens/login_screens/signup.dart';
 import 'screens/login_screens/welcome_page.dart';
 import '/providers/product_provider.dart';
+import '/screens/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
               '/welcome': (context) => const WelcomePage(),
               '/login': (context) => const LoginPage(),
               '/signup': (context) => const SignUpPage(),
+              '/home': (context) => const HomePage(),
             },
             builder: (context, child) {
               return StreamBuilder<User?>(

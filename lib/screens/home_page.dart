@@ -7,13 +7,14 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
-import 'dart:convert'; // for jsonDecode
+import 'dart:convert';
 
 import 'package:plantguard_ai/screens/plant_analysis/ui/plant_analysis.dart';
 import '/wishlist_page.dart';
 import 'package:plantguard_ai/screens/profile/profile_page.dart';
 import '/providers/theme_provider.dart';
 import '/providers/product_provider.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -91,7 +92,7 @@ class _HomePageState extends State<HomePage> {
       final fileSize = await imageFile.length();
 
       final uri = Uri.parse(
-        'https://sng4043.onrender.com/webhook/ae669c75-11b9-4ef6-af73-47c175e64d3a',
+        'https://sng404.onrender.com/webhook/ae669c75-11b9-4ef6-af73-47c175e64d3a',
       );
 
       final request = http.MultipartRequest('POST', uri)
