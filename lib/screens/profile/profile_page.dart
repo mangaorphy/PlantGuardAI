@@ -6,7 +6,7 @@ import '../../providers/user_provider.dart';
 import '../../providers/currency_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../wishlist_page.dart';
-import '../home/home_page.dart';
+import '/screens/home_page.dart';
 import 'edit_profile_page.dart';
 import 'settings_page.dart';
 import '../../cart_page.dart';

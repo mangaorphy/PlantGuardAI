@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/theme_provider.dart';
-import 'models/cart_item_model.dart';
+import 'ui/models/cart_item_model.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});

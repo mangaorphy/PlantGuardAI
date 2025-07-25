@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/gestures.dart';
-
 import 'signup.dart';
-import '/screens/home_page.dart';
-
 import '/bloc/auth_bloc.dart';
 import '/bloc/auth_event.dart';
 import '/bloc/auth_state.dart';
 import 'user_account/user_account.dart';
+import '/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -63,10 +60,11 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: 32),
                   // Login Text
                   Text(
-                    "Login to your Account",
+                    "Login to Your Account",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 24),
@@ -99,23 +97,12 @@ class _LoginPageState extends State<LoginPage> {
                   // Password TextField
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: _obscurePassword,
+                    obscureText: true,
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(color: Colors.white),
                       filled: true,
                       fillColor: Colors.grey[800],
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
-                        },
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,

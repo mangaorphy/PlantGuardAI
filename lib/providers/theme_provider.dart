@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;
@@ -78,4 +79,8 @@ class ThemeProvider with ChangeNotifier {
 
   // Get current border color
   Color get borderColor => isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+
+  static ThemeProvider of(BuildContext context) {
+    return Provider.of<ThemeProvider>(context, listen: false);
+  }
 }

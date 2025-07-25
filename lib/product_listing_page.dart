@@ -5,11 +5,11 @@ import 'providers/cart_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/user_provider.dart';
-import 'models/product_model.dart';
+import '/ui/models/product_model.dart';
 import 'product_detail_page.dart';
 import 'wishlist_page.dart';
 import 'screens/profile/profile_page.dart';
-import 'screens/home/home_page.dart';
+import '/screens/home_page.dart';
 
 class ProductListingPage extends StatefulWidget {
   const ProductListingPage({super.key});

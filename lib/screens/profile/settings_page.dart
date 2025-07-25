@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/currency_provider.dart';
-import '../../models/user_model.dart';
+import '/ui/models/user_model.dart';
 import '../theme_demo_page.dart';
 
 class SettingsPage extends StatefulWidget {

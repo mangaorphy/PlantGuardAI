@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../models/address_model.dart';
+import '/ui/models/address_model.dart';
 
 class AddressProvider with ChangeNotifier {
   final List<AddressModel> _addresses = [];
