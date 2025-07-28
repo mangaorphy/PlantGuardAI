@@ -10,6 +10,7 @@ class ProductModel {
   final bool inStock;
   final String category;
   final List<String> tags;
+  final String? videoUrl; // For tutorial videos
 
   ProductModel({
     required this.id,
@@ -23,6 +24,7 @@ class ProductModel {
     this.inStock = true,
     this.category = 'General',
     this.tags = const [],
+    this.videoUrl,
   });
 
   ProductModel copyWith({
@@ -37,6 +39,7 @@ class ProductModel {
     bool? inStock,
     String? category,
     List<String>? tags,
+    String? videoUrl,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -50,6 +53,7 @@ class ProductModel {
       inStock: inStock ?? this.inStock,
       category: category ?? this.category,
       tags: tags ?? this.tags,
+      videoUrl: videoUrl ?? this.videoUrl,
     );
   }
 
@@ -66,22 +70,33 @@ class ProductModel {
       'inStock': inStock,
       'category': category,
       'tags': tags,
+      'videoUrl': videoUrl,
     };
   }
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    // Handle both proper product data and incorrectly formatted data
+    // Skip records that look like plant disease diagnosis (they have plantName, diseaseName etc.)
+    if (json.containsKey('plantName') || json.containsKey('diseaseName')) {
+      // This looks like plant disease diagnosis data, skip it
+      throw FormatException(
+        'Not a product record - contains plant diagnosis fields',
+      );
+    }
+
     return ProductModel(
-      id: json['id'],
-      name: json['name'],
-      price: json['price'].toDouble(),
-      rating: json['rating'].toDouble(),
-      orders: json['orders'],
-      image: json['image'],
-      description: json['description'],
+      id: json['id'] ?? json['_id'] ?? '',
+      name: json['name'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      rating: (json['rating'] ?? 0.0).toDouble(),
+      orders: json['orders'] ?? 0,
+      image: json['image'] ?? json['imageUrl'] ?? '',
+      description: json['description'] ?? '',
       isNew: json['isNew'] ?? false,
       inStock: json['inStock'] ?? true,
-      category: json['category'] ?? 'General',
+      category: json['category'] ?? 'general',
       tags: List<String>.from(json['tags'] ?? []),
+      videoUrl: json['videoUrl'],
     );
   }
 }
