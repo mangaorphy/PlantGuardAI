@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/base_scaffold.dart';
 import '/screens/home_page.dart';
+import '/product_listing_page_optimized.dart';
 
 class PlantAnalysis extends StatelessWidget {
   final String plantName;
@@ -17,14 +18,12 @@ class PlantAnalysis extends StatelessWidget {
     required this.confidenceScore,
     required this.symptoms,
     required this.diseaseDescription,
-    required this.imageFile
+    required this.imageFile,
   });
 
   @override
   Widget build(BuildContext context) {
-
     print('Displaying: $plantName, $diseaseName, $confidenceScore, $imageFile');
-
 
     return BaseScaffold(
       title: 'Plant Analysis',
@@ -55,8 +54,9 @@ class PlantAnalysis extends StatelessWidget {
             width: double.infinity,
             height: 300,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) =>
-                const Center(child: Icon(Icons.broken_image, size: 60, color: Colors.white)),
+            errorBuilder: (context, error, stackTrace) => const Center(
+              child: Icon(Icons.broken_image, size: 60, color: Colors.white),
+            ),
           ),
           SingleChildScrollView(
             padding: const EdgeInsets.only(top: 250),
@@ -140,7 +140,17 @@ class PlantAnalysis extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      // Navigate to product listing with pesticides and fertilizers for treatment
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProductListingPage(
+                            searchQuery: 'treatment',
+                          ),
+                        ),
+                      );
+                    },
                     child: const Text.rich(
                       TextSpan(
                         children: [
@@ -157,28 +167,6 @@ class PlantAnalysis extends StatelessWidget {
                             style: TextStyle(color: Colors.white70),
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'More Info',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
                       ),
                     ),
                   ),
