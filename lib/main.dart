@@ -51,10 +51,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ProductProvider()),
         // BLoC Providers
         BlocProvider(create: (context) => AuthBloc()),
-        BlocProvider(
-          create: (context) => NotesBloc(FirestoreService()),
-          lazy: false,
-        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
