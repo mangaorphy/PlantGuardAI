@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import 'bloc/auth_bloc.dart';
-import 'bloc/notes_bloc.dart';
 import 'services/firestore_service.dart';
 import 'providers/theme_provider.dart';
 import 'providers/user_provider.dart';
