@@ -11,6 +11,7 @@ class ProductModel {
   final String category;
   final List<String> tags;
   final String? videoUrl; // For tutorial videos
+  final String? howToApply; // For application guide
 
   ProductModel({
     required this.id,
@@ -25,6 +26,7 @@ class ProductModel {
     this.category = 'General',
     this.tags = const [],
     this.videoUrl,
+    this.howToApply,
   });
 
   ProductModel copyWith({
@@ -40,6 +42,7 @@ class ProductModel {
     String? category,
     List<String>? tags,
     String? videoUrl,
+    String? howToApply,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -54,6 +57,7 @@ class ProductModel {
       category: category ?? this.category,
       tags: tags ?? this.tags,
       videoUrl: videoUrl ?? this.videoUrl,
+      howToApply: howToApply ?? this.howToApply,
     );
   }
 
@@ -71,6 +75,7 @@ class ProductModel {
       'category': category,
       'tags': tags,
       'videoUrl': videoUrl,
+      'how_to_apply': howToApply,
     };
   }
 
@@ -97,6 +102,7 @@ class ProductModel {
       category: json['category'] ?? 'general',
       tags: List<String>.from(json['tags'] ?? []),
       videoUrl: json['videoUrl'],
+      howToApply: json['how_to_apply'],
     );
   }
 }

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'ui/models/product_model.dart';
-import 'providers/cart_provider.dart';
-import 'providers/wishlist_provider.dart';
 import 'providers/currency_provider.dart';
-import 'providers/theme_provider.dart';
+import 'providers/wishlist_provider.dart';
 import 'screens/home_page.dart';
 import 'wishlist_page.dart';
 import 'screens/profile/profile_page.dart';
+import 'screens/payment_screens/rwanda_payment.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final ProductModel product;
@@ -21,6 +20,7 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   int _currentIndex = 0;
   int _selectedTabIndex = 0; // 0 for Overview, 1 for Guide
+  int _currentGuidePage = 0; // For guide pagination
 
   @override
   Widget build(BuildContext context) {
@@ -98,96 +98,260 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget _buildOverviewTab() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          // Product Image Section with Disease Examples
-          _buildProductImageSection(),
+    return Column(
+      children: [
+        // Product Image Section - Full width grey background
+        Expanded(flex: 3, child: _buildProductImageSection()),
 
-          const SizedBox(height: 20),
-
-          // Product Details Section
-          _buildProductDetailsSection(),
-        ],
-      ),
+        // Product Details Section - Black background
+        Expanded(flex: 2, child: _buildProductDetailsSection()),
+      ],
     );
+  }
+
+  // Helper method to split guide content into pages
+  List<String> _getGuidePages() {
+    String content =
+        widget.product.howToApply ??
+        '1. Apply this product according to manufacturer instructions.\n'
+            '2. Follow safety guidelines during application.\n'
+            '3. Store in a cool, dry place after use.\n'
+            '4. Ensure proper protective equipment is used.\n'
+            '5. Apply during appropriate weather conditions.\n'
+            '6. Follow the recommended dosage carefully.';
+
+    // Split content into sentences and group them for better pagination
+    List<String> sentences = content
+        .split('\n')
+        .where((s) => s.trim().isNotEmpty)
+        .toList();
+    List<String> pages = [];
+
+    // Group sentences into pages (2 sentences per page for better fit without scrolling)
+    for (int i = 0; i < sentences.length; i += 2) {
+      int end = (i + 2 < sentences.length) ? i + 2 : sentences.length;
+      pages.add(sentences.sublist(i, end).join('\n'));
+    }
+
+    return pages.isEmpty ? ['No guide content available.'] : pages;
   }
 
   Widget _buildGuideTab() {
-    return const Center(
-      child: Text(
-        'Guide content coming soon...',
-        style: TextStyle(color: Colors.white, fontSize: 16),
-      ),
-    );
-  }
+    List<String> guidePages = _getGuidePages();
+    int totalPages = guidePages.length;
 
-  Widget _buildProductImageSection() {
-    return Container(
-      height: 300,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF87CEEB), Color(0xFF98FB98)],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Main product image
-          Positioned(
-            left: 20,
-            top: 20,
-            bottom: 20,
-            child: SizedBox(
-              width: 180,
-              child: widget.product.image.startsWith('http')
-                  ? Image.network(
-                      widget.product.image,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildFallbackImage(),
-                    )
-                  : Image.asset(
-                      widget.product.image,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildFallbackImage(),
-                    ),
-            ),
-          ),
-
-          // Disease example circles (right side)
-          Positioned(
-            right: 20,
-            top: 60,
-            child: Column(
-              children: [
-                _buildDiseaseCircle(
-                  'Shealth Blight',
-                  'assets/images/disease1.png',
-                ),
-                const SizedBox(height: 20),
-                Stack(
-                  children: [
-                    _buildDiseaseCircle(
-                      'Root Rot',
-                      'assets/images/disease2.png',
-                    ),
-                    // Heart icon
-                    const Positioned(
-                      right: -10,
-                      bottom: -10,
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.white,
+    return Column(
+      children: [
+        // Product image section with grey background - reduced height
+        Expanded(
+          flex: 2,
+          child: Container(
+            width: double.infinity,
+            color: Colors.grey[400],
+            child: widget.product.image.startsWith('http')
+                ? Image.network(
+                    widget.product.image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.green[100],
                         child: Icon(
-                          Icons.favorite,
-                          color: Colors.red,
-                          size: 20,
+                          Icons.local_pharmacy,
+                          color: Colors.green,
+                          size: 80,
+                        ),
+                      );
+                    },
+                  )
+                : Image.asset(
+                    widget.product.image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.green[100],
+                        child: Icon(
+                          Icons.local_pharmacy,
+                          color: Colors.green,
+                          size: 80,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ),
+
+        // Bottom section with guide content - increased height
+        Expanded(
+          flex: 3,
+          child: Container(
+            color: Colors.black,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product name button
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Text(
+                    widget.product.name,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // How to Apply section with pagination
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'How to Apply :-',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (totalPages > 1)
+                              Text(
+                                '${_currentGuidePage + 1}/$totalPages',
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: Container(
+                            width: double.infinity,
+                            child: Text(
+                              guidePages[_currentGuidePage],
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                height: 1.5,
+                              ),
+                              overflow: TextOverflow.visible,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Navigation buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _currentGuidePage > 0
+                            ? () {
+                                setState(() {
+                                  _currentGuidePage--;
+                                });
+                              }
+                            : null,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: _currentGuidePage > 0
+                                ? Colors.red[300]
+                                : Colors.grey[600],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.arrow_back,
+                                color: _currentGuidePage > 0
+                                    ? Colors.black
+                                    : Colors.grey[400],
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Previous',
+                                style: TextStyle(
+                                  color: _currentGuidePage > 0
+                                      ? Colors.black
+                                      : Colors.grey[400],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _currentGuidePage < totalPages - 1
+                            ? () {
+                                setState(() {
+                                  _currentGuidePage++;
+                                });
+                              }
+                            : null,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: _currentGuidePage < totalPages - 1
+                                ? Colors.green
+                                : Colors.grey[600],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Next',
+                                style: TextStyle(
+                                  color: _currentGuidePage < totalPages - 1
+                                      ? Colors.black
+                                      : Colors.grey[400],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward,
+                                color: _currentGuidePage < totalPages - 1
+                                    ? Colors.black
+                                    : Colors.grey[400],
+                                size: 18,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -196,45 +360,68 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDiseaseCircle(String label, String imagePath) {
-    return Column(
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 3),
-            image: const DecorationImage(
-              image: AssetImage(
-                'assets/images/Rectangle 35.png',
-              ), // Placeholder disease image
-              fit: BoxFit.cover,
+  Widget _buildProductImageSection() {
+    return Container(
+      width: double.infinity,
+      color: Colors.grey[400], // Grey background as shown in screenshot
+      child: Stack(
+        children: [
+          // Main product image - fills the entire grey area
+          SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: widget.product.image.startsWith('http')
+                ? Image.network(
+                    widget.product.image,
+                    fit: BoxFit
+                        .cover, // Changed to cover to fill entire container
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildFallbackImage(),
+                  )
+                : Image.asset(
+                    widget.product.image,
+                    fit: BoxFit
+                        .cover, // Changed to cover to fill entire container
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildFallbackImage(),
+                  ),
+          ),
+
+          // Heart/Wishlist icon in top right
+          Positioned(
+            right: 20,
+            top: 20,
+            child: Consumer<WishlistProvider>(
+              builder: (context, wishlistProvider, child) {
+                final isInWishlist = wishlistProvider.isInWishlist(
+                  widget.product.id,
+                );
+                return GestureDetector(
+                  onTap: _toggleWishlist,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isInWishlist ? Icons.favorite : Icons.favorite_border,
+                      color: isInWishlist ? Colors.red : Colors.grey[600],
+                      size: 24,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -242,7 +429,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final currencyProvider = Provider.of<CurrencyProvider>(context);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      color: Colors.black,
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -265,6 +454,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Product Description
+          Text(
+            widget.product.description,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+              height: 1.5,
             ),
           ),
 
@@ -303,8 +504,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ],
           ),
-
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -313,9 +512,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget _buildBottomActionBar(CurrencyProvider currencyProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        border: Border(top: BorderSide(color: Colors.grey[700]!, width: 1)),
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        border: Border(top: BorderSide(color: Colors.grey, width: 1)),
       ),
       child: Row(
         children: [
@@ -389,7 +588,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.black, // Changed from grey to black
       selectedItemColor: const Color(0xFF4CAF50),
       unselectedItemColor: Colors.grey[600],
       onTap: (index) {
@@ -443,9 +642,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _addToCart() {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    // cartProvider.addToCart(widget.product, quantity: 1);
-
+    // Remove unused variable
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${widget.product.name} added to cart'),
@@ -461,11 +658,43 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _buyNow() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Proceeding to checkout...'),
-        backgroundColor: Colors.green,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RwandaPaymentScreen(product: widget.product),
       ),
     );
+  }
+
+  void _toggleWishlist() async {
+    final wishlistProvider = Provider.of<WishlistProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      await wishlistProvider.toggleWishlist(widget.product);
+
+      final isNowInWishlist = wishlistProvider.isInWishlist(widget.product.id);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isNowInWishlist
+                ? '${widget.product.name} added to wishlist'
+                : '${widget.product.name} removed from wishlist',
+          ),
+          backgroundColor: isNowInWishlist ? Colors.red : Colors.grey[600],
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating wishlist: $e'),
+          backgroundColor: Colors.red[800],
+        ),
+      );
+    }
   }
 }

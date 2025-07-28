@@ -141,13 +141,11 @@ class PlantAnalysis extends StatelessWidget {
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () {
-                      // Navigate to product listing with pesticides and fertilizers for treatment
+                      // Navigate to product listing to let user search for treatment products
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ProductListingPage(
-                            searchQuery: 'treatment',
-                          ),
+                          builder: (context) => const ProductListingPage(),
                         ),
                       );
                     },

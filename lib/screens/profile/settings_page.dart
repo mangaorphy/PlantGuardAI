@@ -205,6 +205,65 @@ class _SettingsPageState extends State<SettingsPage> {
             Icons.monetization_on,
             themeProvider,
           ),
+
+          // Exchange Rate Info
+          if (currencyProvider.selectedCurrency != 'RWF')
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: themeProvider.cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: themeProvider.borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Current Exchange Rate',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: themeProvider.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '1 USD = 1,446.56 RWF',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: themeProvider.secondaryTextColor,
+                    ),
+                  ),
+                  Text(
+                    '1,000 RWF = ${currencyProvider.formatPriceSync(1000.0)}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: themeProvider.secondaryTextColor,
+                    ),
+                  ),
+                  if (currencyProvider.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        currencyProvider.errorMessage!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
           _buildDropdownTile(
             'Theme',
             'Choose app appearance',
@@ -245,35 +304,33 @@ class _SettingsPageState extends State<SettingsPage> {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ElevatedButton.icon(
-        onPressed:
-            currencyProvider.isLoading
-                ? null
-                : () async {
-                  await currencyProvider.updateExchangeRates();
-                  if (currencyProvider.errorMessage != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(currencyProvider.errorMessage!),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Exchange rates updated!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                },
-        icon:
-            currencyProvider.isLoading
-                ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                : const Icon(Icons.refresh),
+        onPressed: currencyProvider.isLoading
+            ? null
+            : () async {
+                await currencyProvider.updateExchangeRates();
+                if (currencyProvider.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(currencyProvider.errorMessage!),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Exchange rates updated!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+        icon: currencyProvider.isLoading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.refresh),
         label: Text(
           currencyProvider.isLoading ? 'Updating...' : 'Refresh Exchange Rates',
         ),
@@ -526,13 +583,12 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: onChanged,
             dropdownColor: themeProvider.cardColor,
             style: TextStyle(color: themeProvider.textColor),
-            items:
-                options.map((String option) {
-                  return DropdownMenuItem<String>(
-                    value: option,
-                    child: Text(option),
-                  );
-                }).toList(),
+            items: options.map((String option) {
+              return DropdownMenuItem<String>(
+                value: option,
+                child: Text(option),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -613,24 +669,23 @@ class _SettingsPageState extends State<SettingsPage> {
   void _changePassword() {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: Colors.grey[900],
-            title: const Text(
-              'Change Password',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              'Password change functionality will be implemented in a future update.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.green)),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text(
+          'Change Password',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Password change functionality will be implemented in a future update.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.green)),
           ),
+        ],
+      ),
     );
   }
 
@@ -655,44 +710,37 @@ class _SettingsPageState extends State<SettingsPage> {
   void _deleteAccount() {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: Colors.grey[900],
-            title: const Text(
-              'Delete Account',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              'Are you sure you want to permanently delete your account? This action cannot be undone.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Account deletion feature will be implemented.',
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Are you sure you want to permanently delete your account? This action cannot be undone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Account deletion feature will be implemented.',
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 

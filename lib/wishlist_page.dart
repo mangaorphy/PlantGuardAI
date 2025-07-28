@@ -43,10 +43,9 @@ class _WishlistPageState extends State<WishlistPage> {
   Widget build(BuildContext context) {
     return Consumer<WishlistProvider>(
       builder: (context, wishlistProvider, child) {
-        final filteredItems =
-            _searchQuery.isEmpty
-                ? wishlistProvider.items
-                : wishlistProvider.searchWishlist(_searchQuery);
+        final filteredItems = _searchQuery.isEmpty
+            ? wishlistProvider.items
+            : wishlistProvider.searchWishlist(_searchQuery);
 
         return Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
@@ -98,10 +97,9 @@ class _WishlistPageState extends State<WishlistPage> {
                   ),
                 ],
               ),
-              body:
-                  filteredItems.isEmpty
-                      ? _buildEmptyState()
-                      : _buildWishlistContent(filteredItems),
+              body: filteredItems.isEmpty
+                  ? _buildEmptyState()
+                  : _buildWishlistContent(filteredItems),
               bottomNavigationBar: _buildBottomNavigationBar(context),
             );
           },
@@ -226,20 +224,35 @@ class _WishlistPageState extends State<WishlistPage> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    product.image,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.green[100],
-                        child: Icon(
-                          Icons.local_pharmacy,
-                          color: Colors.green,
-                          size: _getResponsiveSize(context, 40),
+                  child: product.image.startsWith('http')
+                      ? Image.network(
+                          product.image,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.green[100],
+                              child: Icon(
+                                Icons.local_pharmacy,
+                                color: Colors.green,
+                                size: _getResponsiveSize(context, 40),
+                              ),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          product.image,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.green[100],
+                              child: Icon(
+                                Icons.local_pharmacy,
+                                color: Colors.green,
+                                size: _getResponsiveSize(context, 40),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ),
               SizedBox(width: _getResponsiveSize(context, 16)),
@@ -633,99 +646,93 @@ class _WishlistPageState extends State<WishlistPage> {
   void _showSearchDialog() {
     showDialog(
       context: context,
-      builder:
-          (context) => Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return AlertDialog(
-                backgroundColor: themeProvider.cardColor,
-                title: Text(
-                  'Search Wishlist',
-                  style: TextStyle(color: themeProvider.textColor),
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return AlertDialog(
+            backgroundColor: themeProvider.cardColor,
+            title: Text(
+              'Search Wishlist',
+              style: TextStyle(color: themeProvider.textColor),
+            ),
+            content: TextField(
+              style: TextStyle(color: themeProvider.textColor),
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                hintStyle: TextStyle(color: themeProvider.secondaryTextColor),
+                filled: true,
+                fillColor: themeProvider.backgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
                 ),
-                content: TextField(
-                  style: TextStyle(color: themeProvider.textColor),
-                  decoration: InputDecoration(
-                    hintText: 'Search products...',
-                    hintStyle: TextStyle(
-                      color: themeProvider.secondaryTextColor,
-                    ),
-                    filled: true,
-                    fillColor: themeProvider.backgroundColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _searchQuery = '';
+                  });
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Clear',
+                  style: TextStyle(color: themeProvider.secondaryTextColor),
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Clear',
-                      style: TextStyle(color: themeProvider.secondaryTextColor),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text('Search'),
-                  ),
-                ],
-              );
-            },
-          ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: const Text('Search'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   void _showSortDialog(WishlistProvider wishlistProvider) {
     showDialog(
       context: context,
-      builder:
-          (context) => Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return AlertDialog(
-                backgroundColor: themeProvider.cardColor,
-                title: Text(
-                  'Sort Wishlist',
-                  style: TextStyle(color: themeProvider.textColor),
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return AlertDialog(
+            backgroundColor: themeProvider.cardColor,
+            title: Text(
+              'Sort Wishlist',
+              style: TextStyle(color: themeProvider.textColor),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSortOption('Default', 'default', wishlistProvider),
+                _buildSortOption('Name (A-Z)', 'name', wishlistProvider),
+                _buildSortOption(
+                  'Price (Low to High)',
+                  'price_low',
+                  wishlistProvider,
                 ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildSortOption('Default', 'default', wishlistProvider),
-                    _buildSortOption('Name (A-Z)', 'name', wishlistProvider),
-                    _buildSortOption(
-                      'Price (Low to High)',
-                      'price_low',
-                      wishlistProvider,
-                    ),
-                    _buildSortOption(
-                      'Price (High to Low)',
-                      'price_high',
-                      wishlistProvider,
-                    ),
-                    _buildSortOption(
-                      'Rating (High to Low)',
-                      'rating',
-                      wishlistProvider,
-                    ),
-                  ],
+                _buildSortOption(
+                  'Price (High to Low)',
+                  'price_high',
+                  wishlistProvider,
                 ),
-              );
-            },
-          ),
+                _buildSortOption(
+                  'Rating (High to Low)',
+                  'rating',
+                  wishlistProvider,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -758,42 +765,41 @@ class _WishlistPageState extends State<WishlistPage> {
   void _showOptionsMenu(WishlistProvider wishlistProvider) {
     showModalBottomSheet(
       context: context,
-      builder:
-          (context) => Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return Container(
-                color: themeProvider.cardColor,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.clear_all, color: Colors.red),
-                      title: Text(
-                        'Clear All Items',
-                        style: TextStyle(color: themeProvider.textColor),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _clearWishlist(wishlistProvider);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.share, color: Colors.green),
-                      title: Text(
-                        'Share Wishlist',
-                        style: TextStyle(color: themeProvider.textColor),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _shareWishlist();
-                      },
-                    ),
-                  ],
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return Container(
+            color: themeProvider.cardColor,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.clear_all, color: Colors.red),
+                  title: Text(
+                    'Clear All Items',
+                    style: TextStyle(color: themeProvider.textColor),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _clearWishlist(wishlistProvider);
+                  },
                 ),
-              );
-            },
-          ),
+                ListTile(
+                  leading: const Icon(Icons.share, color: Colors.green),
+                  title: Text(
+                    'Share Wishlist',
+                    style: TextStyle(color: themeProvider.textColor),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _shareWishlist();
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -824,47 +830,44 @@ class _WishlistPageState extends State<WishlistPage> {
   void _clearWishlist(WishlistProvider wishlistProvider) {
     showDialog(
       context: context,
-      builder:
-          (context) => Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return AlertDialog(
-                backgroundColor: themeProvider.cardColor,
-                title: Text(
-                  'Clear Wishlist',
-                  style: TextStyle(color: themeProvider.textColor),
-                ),
-                content: Text(
-                  'Are you sure you want to remove all items from your wishlist?',
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return AlertDialog(
+            backgroundColor: themeProvider.cardColor,
+            title: Text(
+              'Clear Wishlist',
+              style: TextStyle(color: themeProvider.textColor),
+            ),
+            content: Text(
+              'Are you sure you want to remove all items from your wishlist?',
+              style: TextStyle(color: themeProvider.secondaryTextColor),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
                   style: TextStyle(color: themeProvider.secondaryTextColor),
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(color: themeProvider.secondaryTextColor),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  wishlistProvider.clearWishlist();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Wishlist cleared'),
+                      backgroundColor: Colors.green,
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      wishlistProvider.clearWishlist();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Wishlist cleared'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Clear'),
-                  ),
-                ],
-              );
-            },
-          ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Clear'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 

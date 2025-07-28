@@ -34,6 +34,14 @@ class CurrencyProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Method to refresh rates with updated hardcoded values
+  void refreshRates() {
+    _cachedExchangeRates.clear();
+    _lastUpdated = null;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   // Format price based on selected currency with real-time conversion
   Future<String> formatPrice(double priceInRWF) async {
     if (_selectedCurrency == 'RWF') {
@@ -67,10 +75,10 @@ class CurrencyProvider with ChangeNotifier {
       // Fall back to hardcoded rates if API fails
       _errorMessage = 'Using offline rates';
       final fallbackRates = {
-        'USD': 0.00082,
-        'EUR': 0.00075,
-        'KES': 0.11,
-        'UGX': 3.0,
+        'USD': 1 / 1446.56, // 1 USD = 1,446.56 RWF, so 1 RWF = 1/1446.56 USD
+        'EUR': 0.00075, // Keep existing rate (can be updated if needed)
+        'KES': 0.11, // Keep existing rate
+        'UGX': 3.0, // Keep existing rate
       };
 
       final rate = fallbackRates[_selectedCurrency] ?? 1.0;
@@ -94,10 +102,10 @@ class CurrencyProvider with ChangeNotifier {
 
     // Fall back to hardcoded rates for immediate display
     final fallbackRates = {
-      'USD': 0.00082,
-      'EUR': 0.00075,
-      'KES': 0.11,
-      'UGX': 3.0,
+      'USD': 1 / 1446.56, // 1 USD = 1,446.56 RWF, so 1 RWF = 1/1446.56 USD
+      'EUR': 0.00075, // Keep existing rate (can be updated if needed)
+      'KES': 0.11, // Keep existing rate
+      'UGX': 3.0, // Keep existing rate
     };
 
     final rate = fallbackRates[_selectedCurrency] ?? 1.0;
@@ -158,10 +166,30 @@ class CurrencyProvider with ChangeNotifier {
         DateTime.now().difference(_lastUpdated!).inHours < 1;
   }
 
-  // Clear cached rates
+  // Clear cached rates and refresh with updated hardcoded values
   Future<void> clearCache() async {
     _cachedExchangeRates.clear();
     _lastUpdated = null;
-    notifyListeners();
+    // Force refresh with updated hardcoded rates
+    refreshRates();
+  }
+
+  // Get current exchange rate for display
+  double getCurrentRate(String currency) {
+    if (currency == 'RWF') return 1.0;
+
+    if (_cachedExchangeRates.containsKey(currency)) {
+      return _cachedExchangeRates[currency]!;
+    }
+
+    // Return hardcoded rates
+    final fallbackRates = {
+      'USD': 1 / 1446.56, // Updated accurate rate
+      'EUR': 0.00075,
+      'KES': 0.11,
+      'UGX': 3.0,
+    };
+
+    return fallbackRates[currency] ?? 1.0;
   }
 }

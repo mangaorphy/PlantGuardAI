@@ -114,10 +114,8 @@ class _ProductListingPageState extends State<ProductListingPage> {
     if (widget.searchQuery != null) {
       _searchQuery = widget.searchQuery!;
       _searchController.text = _searchQuery;
-    } else {
-      _searchController.text = 'Bacteria leaf streak';
-      _searchQuery = 'Bacteria leaf streak';
     }
+    // Leave search bar empty by default to show all products
 
     // Initialize providers and fetch products
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -344,28 +342,23 @@ class _ProductListingPageState extends State<ProductListingPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          ..._sortOptions
-                              .map(
-                                (option) => ListTile(
-                                  title: Text(
-                                    option,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  trailing: _selectedSort == option
-                                      ? const Icon(
-                                          Icons.check,
-                                          color: Colors.green,
-                                        )
-                                      : null,
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedSort = option;
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              )
-                              ,
+                          ..._sortOptions.map(
+                            (option) => ListTile(
+                              title: Text(
+                                option,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              trailing: _selectedSort == option
+                                  ? const Icon(Icons.check, color: Colors.green)
+                                  : null,
+                              onTap: () {
+                                setState(() {
+                                  _selectedSort = option;
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),

@@ -14,6 +14,7 @@ import '/wishlist_page.dart';
 import 'package:plantguard_ai/screens/profile/profile_page.dart';
 import '/providers/theme_provider.dart';
 import '/providers/product_provider.dart';
+import '/providers/wishlist_provider.dart';
 import '/ui/widgets/video_player_widget.dart';
 import '/product_detail_page.dart';
 
@@ -299,17 +300,10 @@ class _HomePageState extends State<HomePage> {
                   itemCount: productProvider.searchResults.length,
                   itemBuilder: (context, index) {
                     final product = productProvider.searchResults[index];
-                    return HomeContent._buildGridProductCard(
+                    return _buildGridProductCard(
                       product,
                       themeProvider,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(product: product),
-                          ),
-                        );
-                      },
+                      context,
                     );
                   },
                 ),
@@ -401,6 +395,168 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  Widget _buildGridProductCard(
+    ProductModel product,
+    ThemeProvider themeProvider,
+    BuildContext context,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to ProductDetailPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(product: product),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 2,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(color: Colors.grey[100]),
+                    child: Image.network(
+                      product.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported, size: 24),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(3.0), // Reduced padding
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            product.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 9, // Reduced font size
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(height: 2), // Small spacing
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '\$${product.price.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 8, // Reduced font size
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                  size: 7,
+                                ), // Smaller icon
+                                const SizedBox(width: 1),
+                                Flexible(
+                                  child: Text(
+                                    product.rating.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      fontSize: 7,
+                                    ), // Reduced font size
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Wishlist heart icon
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Consumer<WishlistProvider>(
+                builder: (context, wishlistProvider, child) {
+                  final isInWishlist = wishlistProvider.isInWishlist(
+                    product.id,
+                  );
+                  return GestureDetector(
+                    onTap: () async {
+                      try {
+                        await wishlistProvider.toggleWishlist(product);
+
+                        final isNowInWishlist = wishlistProvider.isInWishlist(
+                          product.id,
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isNowInWishlist
+                                  ? '${product.name} added to wishlist'
+                                  : '${product.name} removed from wishlist',
+                            ),
+                            backgroundColor: isNowInWishlist
+                                ? Colors.red
+                                : Colors.grey[600],
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error updating wishlist: $e'),
+                            backgroundColor: Colors.red[800],
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isInWishlist ? Icons.favorite : Icons.favorite_border,
+                        color: isInWishlist ? Colors.red : Colors.grey[600],
+                        size: 12,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -569,7 +725,7 @@ class HomeContent extends StatelessWidget {
         height: 120,
         child: Center(
           child: Text(
-            'No more items',
+            'loading...',
             style: TextStyle(
               color: themeProvider.secondaryTextColor,
               fontSize: 14,
@@ -592,28 +748,7 @@ class HomeContent extends StatelessWidget {
             margin: const EdgeInsets.only(right: 8),
             child: product.category == 'tutorial' && product.videoUrl != null
                 ? _buildVideoTutorialCard(product, themeProvider, context)
-                : GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailPage(product: product),
-                        ),
-                      );
-                    },
-                    child: HomeContent._buildGridProductCard(
-                      product,
-                      themeProvider,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(product: product),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                : _buildGridProductCard(product, themeProvider, context),
           );
         },
       ),
@@ -764,91 +899,160 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  static Widget _buildGridProductCard(
+  Widget _buildGridProductCard(
     ProductModel product,
     ThemeProvider themeProvider,
-    VoidCallback onTap,
+    BuildContext context,
   ) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // Navigate to ProductDetailPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(product: product),
+          ),
+        );
+      },
       child: Card(
         elevation: 2,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Expanded(
-              flex: 2,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(color: Colors.grey[100]),
-                child: Image.network(
-                  product.image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.image_not_supported, size: 24),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.all(3.0), // Reduced padding
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 9, // Reduced font size
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(color: Colors.grey[100]),
+                    child: Image.network(
+                      product.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported, size: 24),
                       ),
                     ),
-                    const SizedBox(height: 2), // Small spacing
-                    Column(
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(3.0), // Reduced padding
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '\$${product.price.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: Colors.green[700],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 8, // Reduced font size
+                        Flexible(
+                          child: Text(
+                            product.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 9, // Reduced font size
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 1),
-                        Row(
+                        const SizedBox(height: 2), // Small spacing
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                              size: 7,
-                            ), // Smaller icon
-                            const SizedBox(width: 1),
-                            Flexible(
-                              child: Text(
-                                product.rating.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontSize: 7,
-                                ), // Reduced font size
+                            Text(
+                              '\$${product.price.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 8, // Reduced font size
                               ),
+                            ),
+                            const SizedBox(height: 1),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                  size: 7,
+                                ), // Smaller icon
+                                const SizedBox(width: 1),
+                                Flexible(
+                                  child: Text(
+                                    product.rating.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      fontSize: 7,
+                                    ), // Reduced font size
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
+              ],
+            ),
+            // Wishlist heart icon
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Consumer<WishlistProvider>(
+                builder: (context, wishlistProvider, child) {
+                  final isInWishlist = wishlistProvider.isInWishlist(
+                    product.id,
+                  );
+                  return GestureDetector(
+                    onTap: () async {
+                      try {
+                        await wishlistProvider.toggleWishlist(product);
+
+                        final isNowInWishlist = wishlistProvider.isInWishlist(
+                          product.id,
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isNowInWishlist
+                                  ? '${product.name} added to wishlist'
+                                  : '${product.name} removed from wishlist',
+                            ),
+                            backgroundColor: isNowInWishlist
+                                ? Colors.red
+                                : Colors.grey[600],
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error updating wishlist: $e'),
+                            backgroundColor: Colors.red[800],
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isInWishlist ? Icons.favorite : Icons.favorite_border,
+                        color: isInWishlist ? Colors.red : Colors.grey[600],
+                        size: 12,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
