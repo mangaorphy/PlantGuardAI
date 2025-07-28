@@ -4,10 +4,10 @@ plugins {
     id("com.google.gms.google-services")
     // END: FlutterFire Configuration
     id("kotlin-android")
+    id("com.google.gms.google-services") version "4.4.3" apply false
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id("dev.flutter.flutter-gradle-plugin")
+    id("dev.flutter.flutter-gradle-plugin" version "1.0.0")
 }
-
 android {
     namespace = "com.example.plantguard_ai"
     compileSdk = flutter.compileSdkVersion

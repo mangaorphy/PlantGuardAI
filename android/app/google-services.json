@@ -12,7 +12,12 @@
           "package_name": "com.example.plantguard_ai"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "331475033786-bnllce5rgqflaa1ft8o3339io62m1cud.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDLQjuNt6YN3jvrhYvWP82x1KavYO_okJg"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "331475033786-bnllce5rgqflaa1ft8o3339io62m1cud.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "331475033786-ve8hrc95kib4r1f41c0lncovpn17ur8p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.plantguardAi"
+              }
+            }
+          ]
         }
       }
     }
