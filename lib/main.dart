@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
             themeMode: themeProvider.themeMode,
-            initialRoute: '/home', // Changed to directly show home page
+            initialRoute: '/welcome', // Changed to directly show welcome page
             routes: {
               '/welcome': (context) => const WelcomePage(),
               '/login': (context) => const LoginPage(),

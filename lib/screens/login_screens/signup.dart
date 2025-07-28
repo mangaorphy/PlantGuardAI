@@ -183,9 +183,11 @@ class _SignUpPageState extends State<SignUpPage> {
                     builder: (context, state) {
                       if (state is AuthFailure) {
                         return Padding(
-                          padding: EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
-                            state.error,
+                            state.error.contains('ApiException: 10') 
+                                ? 'Google Sign-In failed. Please check your internet connection and try again.'
+                                : state.error,
                             style: TextStyle(color: Colors.red),
                           ),
                         );
@@ -253,7 +255,71 @@ class _SignUpPageState extends State<SignUpPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Social icons...
+                      // Google Icon
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            context.read<AuthBloc>().add(GoogleSignInRequested());
+                          },
+                          child: Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                'assets/google_logo.webp',
+                                width: 32,
+                                height: 32,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      // Facebook Icon
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              'assets/facebook_logo.webp',
+                              width: 32,
+                              height: 32,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      // Twitter Icon
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              'assets/instagram_logo.avif',
+                              width: 32,
+                              height: 32,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 32),

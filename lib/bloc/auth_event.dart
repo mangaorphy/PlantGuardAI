@@ -13,3 +13,7 @@ class SignUpRequested extends AuthEvent {
 
   SignUpRequested(this.email, this.password);
 }
+
+class GoogleSignInRequested extends AuthEvent {}
+
+class LogoutRequested extends AuthEvent {}

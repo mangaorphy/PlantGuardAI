@@ -126,7 +126,9 @@ class _LoginPageState extends State<LoginPage> {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
-                            state.error,
+                            state.error.contains('ApiException: 10') 
+                                ? 'Google Sign-In failed. Please check your internet connection and try again.'
+                                : state.error,
                             style: TextStyle(color: Colors.red),
                           ),
                         );
@@ -203,17 +205,24 @@ class _LoginPageState extends State<LoginPage> {
                           color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              'assets/google_logo.webp',
-                              width: 32,
-                              height: 32,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            context.read<AuthBloc>().add(GoogleSignInRequested());
+                          },
+                          child: Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                'assets/google_logo.webp',
+                                width: 32,
+                                height: 32,
+                              ),
                             ),
                           ),
                         ),
                       ),
+
                       SizedBox(width: 16),
                       // Facebook Icon
                       Container(
