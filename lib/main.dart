@@ -35,7 +35,11 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => CurrencyProvider()),
-        ChangeNotifierProxyProvider2<ThemeProvider, CurrencyProvider, UserProvider>(
+        ChangeNotifierProxyProvider2<
+          ThemeProvider,
+          CurrencyProvider,
+          UserProvider
+        >(
           create: (context) => UserProvider(),
           update: (context, themeProvider, currencyProvider, userProvider) {
             userProvider?.syncWithProviders(themeProvider, currencyProvider);
@@ -61,7 +65,7 @@ class MyApp extends StatelessWidget {
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
             themeMode: themeProvider.themeMode,
-            initialRoute: '/welcome',
+            initialRoute: '/home', // Changed to directly show home page
             routes: {
               '/welcome': (context) => const WelcomePage(),
               '/login': (context) => const LoginPage(),
@@ -73,16 +77,8 @@ class MyApp extends StatelessWidget {
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.active) {
-                    final User? user = snapshot.data;
-                    if (user != null) {
-                      Future.microtask(() {
-                        Navigator.pushNamedAndRemoveUntil(
-                          context, 
-                          '/home', 
-                          (route) => false,
-                        );
-                      });
-                    }
+                    // Navigation will be handled by the initial route and app state
+                    // Remove the problematic navigation call here
                   }
                   return child!;
                 },
