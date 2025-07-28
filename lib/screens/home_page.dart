@@ -15,6 +15,7 @@ import 'package:plantguard_ai/screens/profile/profile_page.dart';
 import '/providers/theme_provider.dart';
 import '/providers/product_provider.dart';
 import '/ui/widgets/video_player_widget.dart';
+import '/product_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -301,6 +302,14 @@ class _HomePageState extends State<HomePage> {
                     return HomeContent._buildGridProductCard(
                       product,
                       themeProvider,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailPage(product: product),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -583,7 +592,28 @@ class HomeContent extends StatelessWidget {
             margin: const EdgeInsets.only(right: 8),
             child: product.category == 'tutorial' && product.videoUrl != null
                 ? _buildVideoTutorialCard(product, themeProvider, context)
-                : HomeContent._buildGridProductCard(product, themeProvider),
+                : GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailPage(product: product),
+                        ),
+                      );
+                    },
+                    child: HomeContent._buildGridProductCard(
+                      product,
+                      themeProvider,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailPage(product: product),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
           );
         },
       ),
@@ -737,88 +767,92 @@ class HomeContent extends StatelessWidget {
   static Widget _buildGridProductCard(
     ProductModel product,
     ThemeProvider themeProvider,
+    VoidCallback onTap,
   ) {
-    return Card(
-      elevation: 2,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(color: Colors.grey[100]),
-              child: Image.network(
-                product.image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.image_not_supported, size: 24),
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 2,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(color: Colors.grey[100]),
+                child: Image.network(
+                  product.image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image_not_supported, size: 24),
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(3.0), // Reduced padding
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      product.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 9, // Reduced font size
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 2), // Small spacing
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: Colors.green[700],
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(3.0), // Reduced padding
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        product.name,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 8, // Reduced font size
+                          fontSize: 9, // Reduced font size
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 1),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                            size: 7,
-                          ), // Smaller icon
-                          const SizedBox(width: 1),
-                          Flexible(
-                            child: Text(
-                              product.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontSize: 7,
-                              ), // Reduced font size
-                            ),
+                    ),
+                    const SizedBox(height: 2), // Small spacing
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '\$${product.price.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: Colors.green[700],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 8, // Reduced font size
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                        ),
+                        const SizedBox(height: 1),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 7,
+                            ), // Smaller icon
+                            const SizedBox(width: 1),
+                            Flexible(
+                              child: Text(
+                                product.rating.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontSize: 7,
+                                ), // Reduced font size
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

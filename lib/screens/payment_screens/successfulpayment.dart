@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class SuccessfulScreen extends StatelessWidget {
+  const SuccessfulScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

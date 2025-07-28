@@ -10,7 +10,7 @@ class AddressManagementPage extends StatefulWidget {
 }
 
 class _AddressManagementPageState extends State<AddressManagementPage> {
-  List<Map<String, dynamic>> _addresses = [
+  final List<Map<String, dynamic>> _addresses = [
     {
       'id': '1',
       'label': 'Home',

@@ -500,7 +500,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget _buildActionButtons(ThemeProvider themeProvider) {
     return Column(
       children: [
-        Container(
+        SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () => _saveProfile(themeProvider),
@@ -522,7 +522,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
+        SizedBox(
           width: double.infinity,
           child: OutlinedButton(
             onPressed: () => _resetToDefaults(themeProvider),

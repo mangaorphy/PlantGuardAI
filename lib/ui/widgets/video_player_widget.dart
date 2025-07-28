@@ -8,10 +8,10 @@ class VideoPlayerWidget extends StatefulWidget {
   final String title;
 
   const VideoPlayerWidget({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.title,
-  }) : super(key: key);
+  });
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -86,8 +86,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 class YouTubeVideoPlayer extends StatefulWidget {
   final String videoUrl;
 
-  const YouTubeVideoPlayer({Key? key, required this.videoUrl})
-    : super(key: key);
+  const YouTubeVideoPlayer({super.key, required this.videoUrl});
 
   @override
   _YouTubeVideoPlayerState createState() => _YouTubeVideoPlayerState();
@@ -134,7 +133,7 @@ class _YouTubeVideoPlayerState extends State<YouTubeVideoPlayer> {
   @override
   Widget build(BuildContext context) {
     if (_youtubeController == null) {
-      return Container(
+      return SizedBox(
         height: 200,
         child: const Center(
           child: CircularProgressIndicator(
@@ -160,8 +159,7 @@ class _YouTubeVideoPlayerState extends State<YouTubeVideoPlayer> {
 class RegularVideoPlayer extends StatefulWidget {
   final String videoUrl;
 
-  const RegularVideoPlayer({Key? key, required this.videoUrl})
-    : super(key: key);
+  const RegularVideoPlayer({super.key, required this.videoUrl});
 
   @override
   _RegularVideoPlayerState createState() => _RegularVideoPlayerState();
@@ -223,7 +221,7 @@ class _RegularVideoPlayerState extends State<RegularVideoPlayer> {
             aspectRatio: _videoPlayerController!.value.aspectRatio,
             child: Chewie(controller: _chewieController!),
           )
-        : Container(
+        : SizedBox(
             height: 200,
             child: const Center(
               child: CircularProgressIndicator(
@@ -242,12 +240,12 @@ class VideoThumbnailWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   const VideoThumbnailWidget({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.title,
     required this.thumbnailUrl,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

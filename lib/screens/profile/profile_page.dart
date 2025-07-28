@@ -23,7 +23,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  int _selectedIndex = 2; // Profile tab selected
+  final int _selectedIndex = 2; // Profile tab selected
 
   @override
   void initState() {
@@ -784,7 +784,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         );
                       },
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             );

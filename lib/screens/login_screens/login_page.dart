@@ -5,7 +5,6 @@ import 'signup.dart';
 import '/bloc/auth_bloc.dart';
 import '/bloc/auth_event.dart';
 import '/bloc/auth_state.dart';
-import 'user_account/user_account.dart';
 import '/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {

@@ -29,10 +29,10 @@ class _ProductListingPageState extends State<ProductListingPage> {
   late TextEditingController _searchController;
 
   // Filter states
-  List<String> _selectedCategories = [];
-  double _minPrice = 0;
-  double _maxPrice = 200000;
-  double _minRating = 0;
+  final List<String> _selectedCategories = [];
+  final double _minPrice = 0;
+  final double _maxPrice = 200000;
+  final double _minRating = 0;
 
   final List<String> _sortOptions = [
     'Best Match',
@@ -365,7 +365,7 @@ class _ProductListingPageState extends State<ProductListingPage> {
                                   },
                                 ),
                               )
-                              .toList(),
+                              ,
                         ],
                       ),
                     ),

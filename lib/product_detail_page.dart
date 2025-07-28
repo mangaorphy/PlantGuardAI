@@ -142,7 +142,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             left: 20,
             top: 20,
             bottom: 20,
-            child: Container(
+            child: SizedBox(
               width: 180,
               child: widget.product.image.startsWith('http')
                   ? Image.network(
