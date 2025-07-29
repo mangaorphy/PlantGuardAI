@@ -4,6 +4,12 @@ import '/screens/payment_screens/successfulpayment.dart';
 import '/ui/models/product_model.dart';
 import '/providers/currency_provider.dart';
 import '/services/mtn_momo_service.dart';
+import '/providers/theme_provider.dart';
+
+import '/wishlist_page.dart';
+import '/screens/profile/profile_page.dart';
+import '/screens/home_page.dart';
+
 
 class RwandaPaymentScreen extends StatefulWidget {
   final ProductModel? product;
@@ -22,6 +28,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
   String _userPhoneNumber = '';
   String? _transactionId;
   String? _paymentMessage;
+  int _currentIndex = 0; // Add this line to define _currentIndex
 
   @override
   void dispose() {
@@ -164,7 +171,12 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
             children: [
               Icon(Icons.phone_android, color: Color(0xFF4CAF50)),
               SizedBox(width: 8),
-              Text('Payment Request Sent!'),
+              Expanded(
+                child: Text(
+                  'Payment Request Sent!',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           content: Column(
@@ -917,24 +929,13 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                   ),
 
                 SizedBox(height: 20),
-
-                // Bottom Navigation
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(Icons.home, 'Home'),
-                      _buildNavItem(Icons.favorite_border, 'Wishlist'),
-                      _buildNavItem(Icons.person_outline, 'Profile'),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
         ),
       ),
+      // Move bottomNavigationBar here
+      bottomNavigationBar: _buildBottomNavigationBar(Provider.of<ThemeProvider>(context)),
     );
   }
 
@@ -1002,13 +1003,90 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label) {
-    return Column(
-      children: [
-        Icon(icon, color: Color(0xFF999999), size: 24),
-        SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 12, color: Color(0xFF999999))),
-      ],
+  void _onTabTapped(int index) {
+    if (_currentIndex == index) return; // Prevent re-tapping the same tab
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  Widget _buildBottomNavigationBar(ThemeProvider themeProvider) {
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        color: themeProvider.cardColor,
+        border: Border(top: BorderSide(color: themeProvider.borderColor)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildNavItem(
+            icon: Icons.home,
+            label: 'Home',
+            isActive: _currentIndex == 0,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+              );
+            },
+            themeProvider: themeProvider,
+          ),
+          _buildNavItem(
+            icon: Icons.favorite,
+            label: 'Wishlist',
+            isActive: _currentIndex == 1,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const WishlistPage()),
+              );
+            },
+            themeProvider: themeProvider,
+          ),
+          _buildNavItem(
+            icon: Icons.person,
+            label: 'Profile',
+            isActive: _currentIndex == 2,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+            themeProvider: themeProvider,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+    required ThemeProvider themeProvider,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isActive ? Colors.green : themeProvider.secondaryTextColor,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isActive ? Colors.green : themeProvider.secondaryTextColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -10,34 +10,6 @@ class WishlistProvider with ChangeNotifier {
   int get itemCount => _items.length;
   bool get isEmpty => _items.isEmpty;
 
-  // Initialize with demo data
-  void initializeWishlist() {
-    _items.clear();
-    _items.addAll([
-      ProductModel(
-        id: '1',
-        name: 'Megha Star',
-        price: 40000,
-        rating: 4.0,
-        orders: 32,
-        image: 'assets/images/product_detail.png',
-        description: 'Multiplex Megha Star for bacterial leaf diseases',
-        isNew: false,
-      ),
-      ProductModel(
-        id: '2',
-        name: 'Plant Guard Pro',
-        price: 35000,
-        rating: 4.2,
-        orders: 45,
-        image: 'assets/images/product_listing.png',
-        description: 'Advanced plant protection solution',
-        isNew: true,
-      ),
-    ]);
-    notifyListeners();
-  }
-
   // Add item to wishlist
   Future<void> addToWishlist(ProductModel product) async {
     if (isInWishlist(product.id)) return;

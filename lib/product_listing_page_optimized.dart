@@ -132,10 +132,10 @@ class _ProductListingPageState extends State<ProductListingPage> {
       // Fetch products from Firestore
       productProvider.fetchProducts();
 
-      // Initialize other providers
-      if (wishlistProvider.isEmpty) {
-        wishlistProvider.initializeWishlist();
-      }
+      // // Initialize other providers
+      // if (wishlistProvider.isEmpty) {
+      //   wishlistProvider.initializeWishlist();
+      // }
       if (cartProvider.isEmpty) {
         cartProvider.initializeCart();
       }

@@ -428,83 +428,85 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget _buildProductDetailsSection() {
     final currencyProvider = Provider.of<CurrencyProvider>(context);
 
-    return Container(
-      width: double.infinity,
-      color: Colors.black,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Price
-          Text(
-            currencyProvider.formatPriceSync(widget.product.price),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Product Name
-          Text(
-            widget.product.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Product Description
-          Text(
-            widget.product.description,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-              height: 1.5,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Rating and Orders
-          Row(
-            children: [
-              Text(
-                '${widget.product.orders} orders',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+    return SingleChildScrollView(
+      child: Container(
+        width: double.infinity,
+        color: Colors.black,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Price
+            Text(
+              currencyProvider.formatPriceSync(widget.product.price),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(width: 20),
-              // Star Rating
-              Row(
-                children: [
-                  Text(
-                    widget.product.rating.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+            ),
+      
+            const SizedBox(height: 12),
+      
+            // Product Name
+            Text(
+              widget.product.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+      
+            const SizedBox(height: 12),
+      
+            // Product Description
+            Text(
+              widget.product.description,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+                height: 1.5,
+              ),
+            ),
+      
+            const SizedBox(height: 16),
+      
+            // Rating and Orders
+            Row(
+              children: [
+                Text(
+                  '${widget.product.orders} orders',
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                const SizedBox(width: 20),
+                // Star Rating
+                Row(
+                  children: [
+                    Text(
+                      widget.product.rating.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  ...List.generate(5, (index) {
-                    return Icon(
-                      index < widget.product.rating.floor()
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: Colors.amber,
-                      size: 20,
-                    );
-                  }),
-                ],
-              ),
-            ],
-          ),
-        ],
+                    const SizedBox(width: 4),
+                    ...List.generate(5, (index) {
+                      return Icon(
+                        index < widget.product.rating.floor()
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: Colors.amber,
+                        size: 20,
+                      );
+                    }),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

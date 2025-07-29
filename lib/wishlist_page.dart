@@ -6,6 +6,7 @@ import 'providers/currency_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/profile/profile_page.dart';
 import '/screens/home_page.dart';
+import '/product_listing_page_optimized.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -26,9 +27,9 @@ class _WishlistPageState extends State<WishlistPage> {
         context,
         listen: false,
       );
-      if (wishlistProvider.isEmpty) {
-        wishlistProvider.initializeWishlist();
-      }
+      // if (wishlistProvider.isEmpty) {
+      //   wishlistProvider.initializeWishlist();
+      // }
     });
   }
 
@@ -144,7 +145,15 @@ class _WishlistPageState extends State<WishlistPage> {
               if (_searchQuery.isEmpty) ...[
                 SizedBox(height: _getResponsiveSize(context, 30)),
                 ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the current dialog
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductListingPage(), // Your product listing page
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: EdgeInsets.symmetric(

@@ -281,45 +281,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                       SizedBox(width: 16),
-                      // Facebook Icon
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              'assets/facebook_logo.webp',
-                              width: 32,
-                              height: 32,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      // Twitter Icon
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              'assets/instagram_logo.avif',
-                              width: 32,
-                              height: 32,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 32),

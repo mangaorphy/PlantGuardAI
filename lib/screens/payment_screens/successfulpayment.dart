@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '/providers/theme_provider.dart';
 
-class SuccessfulScreen extends StatelessWidget {
+import '/wishlist_page.dart';
+import '/screens/profile/profile_page.dart';
+import '/screens/home_page.dart';
+
+class SuccessfulScreen extends StatefulWidget {
   const SuccessfulScreen({super.key});
+
+  @override
+  State<SuccessfulScreen> createState() => _SuccessfulScreenState();
+}
+
+class _SuccessfulScreenState extends State<SuccessfulScreen> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -98,43 +111,100 @@ class SuccessfulScreen extends StatelessWidget {
               ),
               
               SizedBox(height: 20),
-              
-              // Bottom Navigation
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(Icons.home, 'Home'),
-                    _buildNavItem(Icons.favorite_border, 'Wishlist'),
-                    _buildNavItem(Icons.person_outline, 'Profile'),
-                  ],
-                ),
-              ),
+        
             ],
           ),
         ),
       ),
+      // Move bottomNavigationBar here
+      bottomNavigationBar: _buildBottomNavigationBar(Provider.of<ThemeProvider>(context)),
     );
   }
   
-  Widget _buildNavItem(IconData icon, String label) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: Color(0xFF999999),
-          size: 24,
-        ),
-        SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xFF999999),
+  void _onTabTapped(int index) {
+    if (_currentIndex == index) return; // Prevent re-tapping the same tab
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  Widget _buildBottomNavigationBar(ThemeProvider themeProvider) {
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        color: themeProvider.cardColor,
+        border: Border(top: BorderSide(color: themeProvider.borderColor)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildNavItem(
+            icon: Icons.home,
+            label: 'Home',
+            isActive: _currentIndex == 0,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+              );
+            },
+            themeProvider: themeProvider,
           ),
-        ),
-      ],
+          _buildNavItem(
+            icon: Icons.favorite,
+            label: 'Wishlist',
+            isActive: _currentIndex == 1,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const WishlistPage()),
+              );
+            },
+            themeProvider: themeProvider,
+          ),
+          _buildNavItem(
+            icon: Icons.person,
+            label: 'Profile',
+            isActive: _currentIndex == 2,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+            themeProvider: themeProvider,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+    required ThemeProvider themeProvider,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isActive ? Colors.green : themeProvider.secondaryTextColor,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isActive ? Colors.green : themeProvider.secondaryTextColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
