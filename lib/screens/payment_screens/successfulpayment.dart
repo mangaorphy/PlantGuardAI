@@ -39,7 +39,7 @@ class SuccessfulScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               Expanded(
                 child: Center(
                   child: Column(
@@ -61,12 +61,12 @@ class SuccessfulScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       SizedBox(height: 60),
-                      
+
                       // Success Message
                       Text(
-                        'On All Orders Over Rs.5000.00',
+                        'Your payment was successful!',
                         style: TextStyle(
                           fontSize: 16,
                           color: Color(0xFF666666),
@@ -76,7 +76,7 @@ class SuccessfulScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Success Button
               Container(
                 width: double.infinity,
@@ -96,9 +96,9 @@ class SuccessfulScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               SizedBox(height: 20),
-              
+
               // Bottom Navigation
               Container(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -117,23 +117,13 @@ class SuccessfulScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildNavItem(IconData icon, String label) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: Color(0xFF999999),
-          size: 24,
-        ),
+        Icon(icon, color: Color(0xFF999999), size: 24),
         SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xFF999999),
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Color(0xFF999999))),
       ],
     );
   }
