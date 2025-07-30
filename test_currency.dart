@@ -13,7 +13,7 @@ void main() {
   // Test reverse - $1 USD should be 1446.56 RWF
   double testUSD = 1.0;
   double testRWF = testUSD * 1446.56;
-  print('\$${testUSD} USD = ${testRWF.toStringAsFixed(2)} RWF');
+  print('\$$testUSD USD = ${testRWF.toStringAsFixed(2)} RWF');
 
   // Test with typical product price
   double productPriceRWF = 15000; // 15,000 RWF
