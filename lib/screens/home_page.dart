@@ -133,6 +133,11 @@ class _HomePageState extends State<HomePage> {
               ) ??
               0;
 
+          final symptoms =
+              (jsonDecode(result['symptomsIdentified']) as List<dynamic>)
+                  .map((e) => e.toString())
+                  .toList();
+
           Navigator.push(
             context,
             MaterialPageRoute(
