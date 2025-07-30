@@ -264,13 +264,13 @@ class ProductProvider with ChangeNotifier {
       // Plants
       ProductModel(
         id: '7',
-        name: 'Rose Plant',
+        name: 'Maize',
         price: 25.00,
         rating: 4.9,
         orders: 89,
         image:
-            'https://via.placeholder.com/150x150/E91E63/FFFFFF?text=Rose+Plant',
-        description: 'Beautiful flowering rose plant for your garden',
+            'https://res.cloudinary.com/dul2xmhtf/image/upload/v1753872448/corn-field-close-up-selective-focus-green-maize-corn-field-plantation-summer-agricultural-season-close-up-corn-cob-364156674_irljgq.webp',
+        description: 'Beautiful flowering maize plant for your garden',
         isNew: true,
         category: 'plant',
         tags: ['flowering', 'garden', 'ornamental'],
@@ -282,7 +282,7 @@ class ProductProvider with ChangeNotifier {
         rating: 4.4,
         orders: 203,
         image:
-            'https://via.placeholder.com/150x150/FF5722/FFFFFF?text=Tomato+Plant',
+            'https://res.cloudinary.com/dul2xmhtf/image/upload/v1753791923/cherry-tomato-seedling-maskotka-plastic-pot-49873305_ahinzj.webp',
         description: 'Fresh tomato seedlings ready for planting',
         category: 'plant',
         tags: ['vegetable', 'seedling', 'edible'],
@@ -294,7 +294,7 @@ class ProductProvider with ChangeNotifier {
         rating: 4.6,
         orders: 156,
         image:
-            'https://via.placeholder.com/150x150/4CAF50/FFFFFF?text=Herb+Kit',
+            'https://res.cloudinary.com/dul2xmhtf/image/upload/v1753872448/Mentha-spicata-2-web_alxzcm.jpg',
         description: 'Collection of popular cooking herbs',
         category: 'plant',
         tags: ['herbs', 'cooking', 'aromatic'],
@@ -307,12 +307,12 @@ class ProductProvider with ChangeNotifier {
         price: 9.99,
         rating: 4.7,
         orders: 312,
-        image: 'https://img.youtube.com/vi/Yos7pVIZwl8/maxresdefault.jpg',
+        image: 'https://res.cloudinary.com/dul2xmhtf/image/upload/v1753870886/Screenshot_2025-07-30_at_12.20.45_rrwjph.png',
         description: 'Complete beginner guide to gardening',
         isNew: true,
         category: 'tutorial',
         tags: ['beginner', 'guide', 'education'],
-        videoUrl: 'https://www.youtube.com/shorts/Yos7pVIZwl8',
+        videoUrl: 'https://youtu.be/Z2exgyjzr5c?si=5TPpikHC0ePee-Et',
       ),
       ProductModel(
         id: '11',
@@ -320,11 +320,11 @@ class ProductProvider with ChangeNotifier {
         price: 14.99,
         rating: 4.8,
         orders: 198,
-        image: 'https://img.youtube.com/vi/Yos7pVIZwl8/maxresdefault.jpg',
+        image: 'https://res.cloudinary.com/dul2xmhtf/image/upload/v1753871037/Screenshot_2025-07-30_at_12.23.46_khx1vt.png',
         description: 'Advanced techniques for plant pest management',
         category: 'tutorial',
         tags: ['advanced', 'pest-control', 'management'],
-        videoUrl: 'https://www.youtube.com/shorts/Yos7pVIZwl8',
+        videoUrl: 'https://youtu.be/IF8P-a9AqGA?si=sJjPIZgaXXpLC2YZ',
       ),
       ProductModel(
         id: '12',
