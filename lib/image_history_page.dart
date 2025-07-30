@@ -173,7 +173,8 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
           ),
           const SizedBox(height: 30),
           ElevatedButton.icon(
-            onPressed: () => Navigator.pop(context),
+            // Go to the home page to take a photo
+            onPressed: () => Navigator.pushNamed(context, '/home'),
             icon: const Icon(Icons.camera_alt, color: Colors.white),
             label: const Text(
               'Take Photo',

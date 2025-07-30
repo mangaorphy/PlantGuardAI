@@ -146,12 +146,10 @@ class _HomePageState extends State<HomePage> {
               ) ??
               0;
 
-<<<<<<< HEAD
           final symptoms =
               (jsonDecode(result['symptomsIdentified']) as List<dynamic>)
                   .map((e) => e.toString())
                   .toList();
-=======
           // Update the image history with analysis results
           final isHealthy =
               (result['diseaseName'] ?? 'Unknown').toLowerCase() == 'healthy' ||
@@ -174,7 +172,6 @@ class _HomePageState extends State<HomePage> {
               'imageUrl': result['imageUrl'] ?? '',
             },
           );
->>>>>>> 56a4278 (feat: Complete Image History integration and enhance settings)
 
           Navigator.push(
             context,
@@ -516,7 +513,7 @@ class _HomePageState extends State<HomePage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '\$${product.price.toStringAsFixed(2)}',
+                              '\RWF${product.price.toStringAsFixed(2)}',
                               style: TextStyle(
                                 color: Colors.green[700],
                                 fontWeight: FontWeight.bold,
@@ -941,7 +938,7 @@ class HomeContent extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          '\RWF${product.price.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: Colors.green[700],
                             fontWeight: FontWeight.bold,
@@ -1042,7 +1039,7 @@ class HomeContent extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '\$${product.price.toStringAsFixed(2)}',
+                              '\RWF${product.price.toStringAsFixed(2)}',
                               style: TextStyle(
                                 color: Colors.green[700],
                                 fontWeight: FontWeight.bold,
