@@ -22,14 +22,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool _notificationsEnabled = true;
   bool _emailNotifications = true;
 
-  final List<String> _languages = [
-    'English',
-    'Kinyarwanda',
-    'French',
-    'Swahili',
-  ];
-  String _selectedLanguage = 'English';
-
   final List<String> _genders = [
     'Male',
     'Female',
@@ -49,7 +41,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         _emailController.text = user.email;
         _phoneController.text = user.phone;
         _locationController.text = user.location;
-        _selectedLanguage = user.language;
         _notificationsEnabled = user.notificationsEnabled;
         _emailNotifications = user.emailNotifications;
         setState(() {});
@@ -148,34 +139,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                     ),
                     child: ClipOval(
-                      child:
-                          userProvider.profileImageFile != null
-                              ? Image.file(
-                                userProvider.profileImageFile!,
-                                fit: BoxFit.cover,
-                                width: 100,
-                                height: 100,
-                              )
-                              : userProvider.user?.profileImage.isNotEmpty ==
-                                  true
-                              ? Image.network(
-                                userProvider.user!.profileImage,
-                                fit: BoxFit.cover,
-                                width: 100,
-                                height: 100,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 50,
-                                  );
-                                },
-                              )
-                              : const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 50,
-                              ),
+                      child: userProvider.profileImageFile != null
+                          ? Image.file(
+                              userProvider.profileImageFile!,
+                              fit: BoxFit.cover,
+                              width: 100,
+                              height: 100,
+                            )
+                          : userProvider.user?.profileImage.isNotEmpty == true
+                          ? Image.network(
+                              userProvider.user!.profileImage,
+                              fit: BoxFit.cover,
+                              width: 100,
+                              height: 100,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 50,
+                                );
+                              },
+                            )
+                          : const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 50,
+                            ),
                     ),
                   ),
                   Positioned(
@@ -304,19 +293,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ),
           const SizedBox(height: 20),
-          _buildDropdownField(
-            'Language',
-            _selectedLanguage,
-            _languages,
-            Icons.language,
-            themeProvider,
-            (value) {
-              setState(() {
-                _selectedLanguage = value!;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
           _buildSwitchTile(
             'Push Notifications',
             'Receive app notifications',
@@ -437,13 +413,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       Icons.arrow_drop_down,
                       color: themeProvider.secondaryTextColor,
                     ),
-                    items:
-                        options.map((String option) {
-                          return DropdownMenuItem<String>(
-                            value: option,
-                            child: Text(option),
-                          );
-                        }).toList(),
+                    items: options.map((String option) {
+                      return DropdownMenuItem<String>(
+                        value: option,
+                        child: Text(option),
+                      );
+                    }).toList(),
                     onChanged: onChanged,
                   ),
                 ),
@@ -550,57 +525,56 @@ class _EditProfilePageState extends State<EditProfilePage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Update Profile Picture',
+              style: TextStyle(
+                color: themeProvider.textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(
-                  'Update Profile Picture',
-                  style: TextStyle(
-                    color: themeProvider.textColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                _buildImageOption(
+                  icon: Icons.camera_alt,
+                  label: 'Camera',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageFromCamera();
+                  },
+                  themeProvider: themeProvider,
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildImageOption(
-                      icon: Icons.camera_alt,
-                      label: 'Camera',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickImageFromCamera();
-                      },
-                      themeProvider: themeProvider,
-                    ),
-                    _buildImageOption(
-                      icon: Icons.photo_library,
-                      label: 'Gallery',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickImageFromGallery();
-                      },
-                      themeProvider: themeProvider,
-                    ),
-                    _buildImageOption(
-                      icon: Icons.delete,
-                      label: 'Remove',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _removeProfileImage();
-                      },
-                      themeProvider: themeProvider,
-                    ),
-                  ],
+                _buildImageOption(
+                  icon: Icons.photo_library,
+                  label: 'Gallery',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageFromGallery();
+                  },
+                  themeProvider: themeProvider,
                 ),
-                const SizedBox(height: 20),
+                _buildImageOption(
+                  icon: Icons.delete,
+                  label: 'Remove',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _removeProfileImage();
+                  },
+                  themeProvider: themeProvider,
+                ),
               ],
             ),
-          ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
     );
   }
 
@@ -721,9 +695,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         location: _locationController.text,
       );
 
-      // Update language preference
-      userProvider.setLanguage(_selectedLanguage);
-
       // Update notification settings
       userProvider.updateNotificationSettings(
         pushNotifications: _notificationsEnabled,
@@ -744,49 +715,44 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _resetToDefaults(ThemeProvider themeProvider) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeProvider.cardColor,
-            title: Text(
-              'Reset to Defaults',
-              style: TextStyle(color: themeProvider.textColor),
-            ),
-            content: Text(
-              'Are you sure you want to reset all preferences to their default values?',
+      builder: (context) => AlertDialog(
+        backgroundColor: themeProvider.cardColor,
+        title: Text(
+          'Reset to Defaults',
+          style: TextStyle(color: themeProvider.textColor),
+        ),
+        content: Text(
+          'Are you sure you want to reset all preferences to their default values?',
+          style: TextStyle(color: themeProvider.secondaryTextColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
               style: TextStyle(color: themeProvider.secondaryTextColor),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: themeProvider.secondaryTextColor),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedLanguage = 'English';
-                    _selectedGender = 'Female';
-                    _notificationsEnabled = true;
-                    _emailNotifications = true;
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Preferences reset to defaults'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text(
-                  'Reset',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _selectedGender = 'Female';
+                _notificationsEnabled = true;
+                _emailNotifications = true;
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Preferences reset to defaults'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Reset', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 }

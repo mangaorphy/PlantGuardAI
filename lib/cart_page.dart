@@ -4,6 +4,7 @@ import 'providers/cart_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/theme_provider.dart';
 import 'ui/models/cart_item_model.dart';
+import 'screens/payment_screens/rwanda_payment.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -16,12 +17,7 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final cartProvider = Provider.of<CartProvider>(context, listen: false);
-      if (cartProvider.isEmpty) {
-        cartProvider.initializeCart();
-      }
-    });
+    // Cart starts empty - no initialization needed
   }
 
   @override
@@ -56,14 +52,12 @@ class _CartPageState extends State<CartPage> {
                   ),
                 ],
               ),
-              body:
-                  cartProvider.isEmpty
-                      ? _buildEmptyCart(themeProvider)
-                      : _buildCartContent(cartProvider, themeProvider),
-              bottomNavigationBar:
-                  cartProvider.isEmpty
-                      ? null
-                      : _buildCheckoutButton(cartProvider, themeProvider),
+              body: cartProvider.isEmpty
+                  ? _buildEmptyCart(themeProvider)
+                  : _buildCartContent(cartProvider, themeProvider),
+              bottomNavigationBar: cartProvider.isEmpty
+                  ? null
+                  : _buildCheckoutButton(cartProvider, themeProvider),
             );
           },
         );
@@ -166,20 +160,35 @@ class _CartPageState extends State<CartPage> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                item.product.image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.green[100],
-                    child: const Icon(
-                      Icons.local_pharmacy,
-                      color: Colors.green,
-                      size: 40,
+              child: item.product.image.startsWith('http')
+                  ? Image.network(
+                      item.product.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.green[100],
+                          child: const Icon(
+                            Icons.local_pharmacy,
+                            color: Colors.green,
+                            size: 40,
+                          ),
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      item.product.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.green[100],
+                          child: const Icon(
+                            Icons.local_pharmacy,
+                            color: Colors.green,
+                            size: 40,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -225,19 +234,17 @@ class _CartPageState extends State<CartPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    onPressed:
-                        item.quantity > 1
-                            ? () => cartProvider.updateQuantity(
-                              item.id,
-                              item.quantity - 1,
-                            )
-                            : null,
+                    onPressed: item.quantity > 1
+                        ? () => cartProvider.updateQuantity(
+                            item.id,
+                            item.quantity - 1,
+                          )
+                        : null,
                     icon: Icon(
                       Icons.remove_circle_outline,
-                      color:
-                          item.quantity > 1
-                              ? Colors.green
-                              : themeProvider.secondaryTextColor,
+                      color: item.quantity > 1
+                          ? Colors.green
+                          : themeProvider.secondaryTextColor,
                     ),
                   ),
                   Text(
@@ -249,11 +256,8 @@ class _CartPageState extends State<CartPage> {
                     ),
                   ),
                   IconButton(
-                    onPressed:
-                        () => cartProvider.updateQuantity(
-                          item.id,
-                          item.quantity + 1,
-                        ),
+                    onPressed: () =>
+                        cartProvider.updateQuantity(item.id, item.quantity + 1),
                     icon: const Icon(
                       Icons.add_circle_outline,
                       color: Colors.green,
@@ -347,10 +351,9 @@ class _CartPageState extends State<CartPage> {
           Text(
             label,
             style: TextStyle(
-              color:
-                  isTotal
-                      ? themeProvider.textColor
-                      : themeProvider.secondaryTextColor,
+              color: isTotal
+                  ? themeProvider.textColor
+                  : themeProvider.secondaryTextColor,
               fontSize: isTotal ? 18 : 16,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
@@ -406,44 +409,40 @@ class _CartPageState extends State<CartPage> {
   void _clearCart(CartProvider cartProvider, ThemeProvider themeProvider) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeProvider.cardColor,
-            title: Text(
-              'Clear Cart',
-              style: TextStyle(color: themeProvider.textColor),
-            ),
-            content: Text(
-              'Are you sure you want to remove all items from your cart?',
+      builder: (context) => AlertDialog(
+        backgroundColor: themeProvider.cardColor,
+        title: Text(
+          'Clear Cart',
+          style: TextStyle(color: themeProvider.textColor),
+        ),
+        content: Text(
+          'Are you sure you want to remove all items from your cart?',
+          style: TextStyle(color: themeProvider.secondaryTextColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
               style: TextStyle(color: themeProvider.secondaryTextColor),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: themeProvider.secondaryTextColor),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  cartProvider.clearCart();
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Cart cleared successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text(
-                  'Clear',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () {
+              cartProvider.clearCart();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Cart cleared successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Clear', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -451,45 +450,29 @@ class _CartPageState extends State<CartPage> {
     CartProvider cartProvider,
     ThemeProvider themeProvider,
   ) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeProvider.cardColor,
-            title: Text(
-              'Proceed to Checkout',
-              style: TextStyle(color: themeProvider.textColor),
-            ),
-            content: Text(
-              'This will redirect you to the checkout process.',
-              style: TextStyle(color: themeProvider.secondaryTextColor),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: themeProvider.secondaryTextColor),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Proceeding to checkout...'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text(
-                  'Proceed',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+    if (cartProvider.items.isNotEmpty) {
+      // Calculate total amount
+      double totalAmount = cartProvider.items.fold(
+        0,
+        (sum, item) => sum + (item.product.price * item.quantity),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RwandaPaymentScreen(
+            cartItems: cartProvider.items,
+            cartTotal: totalAmount,
           ),
-    );
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your cart is empty'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

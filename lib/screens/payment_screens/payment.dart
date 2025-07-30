@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/screens/payment_screens/successfulpayment.dart';
 import '/ui/models/product_model.dart';
+import '/ui/models/cart_item_model.dart';
 
 class PaymentScreen extends StatefulWidget {
   final ProductModel? product;
+  final double? cartTotal;
+  final List<CartItemModel>? cartItems;
 
-  const PaymentScreen({super.key, this.product});
+  const PaymentScreen({
+    super.key,
+    this.product,
+    this.cartTotal,
+    this.cartItems,
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -15,6 +23,26 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _showUSSDInstructions = false;
+
+  // Helper method to get the total amount
+  double get totalAmount {
+    if (widget.cartTotal != null) {
+      return widget.cartTotal!;
+    }
+    return widget.product?.price ?? 15.00;
+  }
+
+  // Helper method to get the category/description
+  String get paymentDescription {
+    if (widget.cartItems != null && widget.cartItems!.isNotEmpty) {
+      if (widget.cartItems!.length == 1) {
+        return widget.cartItems!.first.product.category;
+      } else {
+        return '${widget.cartItems!.length} items in cart';
+      }
+    }
+    return widget.product?.category ?? 'NPK -15';
+  }
 
   @override
   void dispose() {
@@ -82,13 +110,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     children: [
                       _buildDetailRow(
                         'Price Amount',
-                        '\$${widget.product?.price.toStringAsFixed(2) ?? '15.00'}',
+                        '\$${totalAmount.toStringAsFixed(2)}',
                       ),
                       SizedBox(height: 16),
-                      _buildDetailRow(
-                        'Category',
-                        widget.product?.category ?? 'NPK -15',
-                      ),
+                      _buildDetailRow('Category', paymentDescription),
                       SizedBox(height: 16),
                       _buildDetailRow('Delivery', '3 - 4 Day'),
                       SizedBox(height: 16),
@@ -270,17 +295,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   _buildUSSDStep(
                                     stepNumber: '4',
                                     instruction:
-                                        'Enter amount: ${widget.product?.price.toStringAsFixed(0) ?? '15'}',
-                                    actionText:
-                                        widget.product?.price.toStringAsFixed(
-                                          0,
-                                        ) ??
-                                        '15',
+                                        'Enter amount: ${totalAmount.toStringAsFixed(0)}',
+                                    actionText: totalAmount.toStringAsFixed(0),
                                     onCopy: () => _copyToClipboard(
-                                      widget.product?.price.toStringAsFixed(
-                                            0,
-                                          ) ??
-                                          '15',
+                                      totalAmount.toStringAsFixed(0),
                                     ),
                                   ),
 
@@ -336,7 +354,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            'Total amount : \$${widget.product?.price.toStringAsFixed(2) ?? '15.00'}',
+                            'Total amount : \$${totalAmount.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w500,

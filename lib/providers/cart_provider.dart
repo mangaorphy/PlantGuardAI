@@ -20,62 +20,10 @@ class CartProvider with ChangeNotifier {
   double get tax => subtotal * 0.18; // 18% VAT
   double get total => subtotal + shipping + tax;
 
-  // Initialize with demo data
+  // Initialize empty cart
   void initializeCart() {
-    final demoProducts = [
-      ProductModel(
-        id: '1',
-        name: 'Megha Star',
-        price: 40000,
-        rating: 4.0,
-        orders: 32,
-        image: 'assets/images/product_listing.png',
-        description: 'Multiplex Megha Star for bacterial leaf diseases',
-        inStock: true,
-      ),
-      ProductModel(
-        id: '2',
-        name: 'Plant Guard Pro',
-        price: 35000,
-        rating: 4.2,
-        orders: 45,
-        image: 'assets/images/product_detail.png',
-        description: 'Advanced plant protection solution',
-        inStock: true,
-      ),
-      ProductModel(
-        id: '3',
-        name: 'Leaf Protection Plus',
-        price: 42000,
-        rating: 3.8,
-        orders: 28,
-        image: 'assets/images/Rectangle 42.png',
-        description: 'Premium leaf protection formula',
-        inStock: false,
-      ),
-    ];
-
+    // Cart starts empty - no demo data
     _items.clear();
-    _items.addAll([
-      CartItemModel(
-        id: '1',
-        product: demoProducts[0],
-        quantity: 2,
-        addedAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      CartItemModel(
-        id: '2',
-        product: demoProducts[1],
-        quantity: 1,
-        addedAt: DateTime.now().subtract(const Duration(hours: 6)),
-      ),
-      CartItemModel(
-        id: '3',
-        product: demoProducts[2],
-        quantity: 3,
-        addedAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-    ]);
     notifyListeners();
   }
 
@@ -191,21 +139,20 @@ class CartProvider with ChangeNotifier {
   int getQuantity(String productId) {
     final item = _items.firstWhere(
       (item) => item.product.id == productId,
-      orElse:
-          () => CartItemModel(
-            id: '',
-            product: ProductModel(
-              id: '',
-              name: '',
-              price: 0,
-              rating: 0,
-              orders: 0,
-              image: '',
-              description: '',
-            ),
-            quantity: 0,
-            addedAt: DateTime.now(),
-          ),
+      orElse: () => CartItemModel(
+        id: '',
+        product: ProductModel(
+          id: '',
+          name: '',
+          price: 0,
+          rating: 0,
+          orders: 0,
+          image: '',
+          description: '',
+        ),
+        quantity: 0,
+        addedAt: DateTime.now(),
+      ),
     );
     return item.quantity;
   }
@@ -218,5 +165,12 @@ class CartProvider with ChangeNotifier {
   // Get only in-stock items
   List<CartItemModel> get inStockItems {
     return _items.where((item) => item.product.inStock).toList();
+  }
+
+  // Create pending order from cart (for demonstration)
+  void createPendingOrderFromCart() {
+    // This would typically integrate with OrderProvider
+    // For now, just show a message indicating items are pending payment
+    notifyListeners();
   }
 }

@@ -15,6 +15,7 @@ import 'package:plantguard_ai/screens/profile/profile_page.dart';
 import '/providers/theme_provider.dart';
 import '/providers/product_provider.dart';
 import '/providers/wishlist_provider.dart';
+import '/providers/image_history_provider.dart';
 import '/ui/widgets/video_player_widget.dart';
 import '/product_detail_page.dart';
 
@@ -90,6 +91,18 @@ class _HomePageState extends State<HomePage> {
       }
 
       final imageFile = File(pickedFile.path);
+
+      // Save image to history provider for analysis
+      final imageHistoryProvider = Provider.of<ImageHistoryProvider>(
+        context,
+        listen: false,
+      );
+      final imageId = await imageHistoryProvider.addImageForAnalysis(
+        imageFile: imageFile,
+        location: 'Plant Analysis',
+        notes: 'Analyzed via mobile app',
+      );
+
       final fileName = path.basename(imageFile.path);
       final mimeType =
           lookupMimeType(imageFile.path) ?? 'image/jpeg'; // default fallback
@@ -133,10 +146,35 @@ class _HomePageState extends State<HomePage> {
               ) ??
               0;
 
+<<<<<<< HEAD
           final symptoms =
               (jsonDecode(result['symptomsIdentified']) as List<dynamic>)
                   .map((e) => e.toString())
                   .toList();
+=======
+          // Update the image history with analysis results
+          final isHealthy =
+              (result['diseaseName'] ?? 'Unknown').toLowerCase() == 'healthy' ||
+              (result['diseaseName'] ?? 'Unknown').toLowerCase() ==
+                  'no disease detected';
+
+          await imageHistoryProvider.updateAnalysisResults(
+            imageId: imageId,
+            status: isHealthy ? 'Healthy' : 'Disease Detected',
+            disease: isHealthy ? null : (result['diseaseName'] ?? 'Unknown'),
+            confidence: confidence,
+            analysisResults: {
+              'plantName': result['plantName'] ?? 'Unknown',
+              'diseaseName': result['diseaseName'] ?? 'Unknown',
+              'symptoms': RegExp(r"'([^']+)'")
+                  .allMatches(result['symptomsIdentified'] ?? '')
+                  .map((m) => m.group(1)!)
+                  .toList(),
+              'description': result['shortDiseaseDescrition'] ?? '',
+              'imageUrl': result['imageUrl'] ?? '',
+            },
+          );
+>>>>>>> 56a4278 (feat: Complete Image History integration and enhance settings)
 
           Navigator.push(
             context,
@@ -155,9 +193,21 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         } else {
+          // If analysis fails, update the image as failed
+          await imageHistoryProvider.updateAnalysisResults(
+            imageId: imageId,
+            status: 'Analysis Failed',
+            analysisResults: {'error': 'Unexpected response format'},
+          );
           throw Exception('Unexpected or empty response format.');
         }
       } else {
+        // If API call fails, update the image as failed
+        await imageHistoryProvider.updateAnalysisResults(
+          imageId: imageId,
+          status: 'Analysis Failed',
+          analysisResults: {'error': 'API Error: ${response.statusCode}'},
+        );
         throw Exception('API Error: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
@@ -586,6 +636,34 @@ class HomeContent extends StatelessWidget {
 
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
+        // Show loading indicator while fetching products OR if no products loaded yet
+        if (productProvider.isLoading ||
+            (productProvider.products.isEmpty &&
+                productProvider.pesticides.isEmpty &&
+                productProvider.fertilizers.isEmpty &&
+                productProvider.plants.isEmpty &&
+                productProvider.tutorials.isEmpty)) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(50.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: Colors.green,
+                    strokeWidth: 3,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading products...',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -626,10 +704,6 @@ class HomeContent extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // Latest NPK Fertilizer Section
-                const SizedBox(height: 20),
-                _buildLatestItemCard('NPK Fertilizer', themeProvider),
 
                 const SizedBox(height: 20),
 
@@ -1058,120 +1132,6 @@ class HomeContent extends StatelessWidget {
                     ),
                   );
                 },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static Widget _buildLatestItemCard(
-    String title,
-    ThemeProvider themeProvider,
-  ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      clipBehavior: Clip.antiAlias,
-      child: SizedBox(
-        height: 200,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                'assets/npk_fertilizer.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.6),
-                    Colors.black.withOpacity(0.1),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green[800],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'LATEST',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Balanced nutrients for plant growth',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              const Text(
-                                '4.8',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              const Spacer(),
-                              Text(
-                                '\$12.99',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[300],
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ],

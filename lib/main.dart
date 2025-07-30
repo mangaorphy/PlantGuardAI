@@ -11,6 +11,8 @@ import 'providers/cart_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'providers/address_provider.dart';
 import 'providers/currency_provider.dart';
+import 'providers/order_provider.dart';
+import 'providers/image_history_provider.dart';
 
 import 'screens/login_screens/login_page.dart';
 import 'screens/login_screens/signup.dart';
@@ -47,7 +49,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CartProvider()),
         ChangeNotifierProvider(create: (context) => WishlistProvider()),
         ChangeNotifierProvider(create: (context) => AddressProvider()),
+        ChangeNotifierProvider(create: (context) => OrderProvider()),
         ChangeNotifierProvider(create: (context) => ProductProvider()),
+        ChangeNotifierProvider(create: (context) => ImageHistoryProvider()),
         // BLoC Providers
         BlocProvider(create: (context) => AuthBloc()),
       ],

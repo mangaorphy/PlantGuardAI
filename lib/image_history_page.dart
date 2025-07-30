@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/image_history_provider.dart';
 
 class ImageHistoryPage extends StatefulWidget {
   const ImageHistoryPage({super.key});
@@ -12,64 +13,44 @@ class ImageHistoryPage extends StatefulWidget {
 class _ImageHistoryPageState extends State<ImageHistoryPage> {
   String _selectedTab = 'All';
   bool _isGridView = true;
+  List<ImageHistoryItem> _filteredImages = [];
 
-  final List<Map<String, dynamic>> _imageHistory = [
-    {
-      'id': '1',
-      'image': 'assets/images/Rectangle 35.png',
-      'date': '2024-01-15',
-      'time': '14:30',
-      'status': 'Healthy',
-      'disease': null,
-      'confidence': 95,
-      'location': 'Garden Section A',
-    },
-    {
-      'id': '2',
-      'image': 'assets/images/Rectangle 42.png',
-      'date': '2024-01-14',
-      'time': '10:15',
-      'status': 'Disease Detected',
-      'disease': 'Leaf Spot',
-      'confidence': 87,
-      'location': 'Greenhouse B',
-    },
-    {
-      'id': '3',
-      'image': 'assets/images/product_listing.png',
-      'date': '2024-01-13',
-      'time': '16:45',
-      'status': 'Disease Detected',
-      'disease': 'Powdery Mildew',
-      'confidence': 92,
-      'location': 'Field C',
-    },
-    {
-      'id': '4',
-      'image': 'assets/images/product_detail.png',
-      'date': '2024-01-12',
-      'time': '09:20',
-      'status': 'Healthy',
-      'disease': null,
-      'confidence': 98,
-      'location': 'Garden Section B',
-    },
-    {
-      'id': '5',
-      'image': 'assets/images/Rectangle 35.png',
-      'date': '2024-01-11',
-      'time': '13:10',
-      'status': 'Disease Detected',
-      'disease': 'Bacterial Blight',
-      'confidence': 89,
-      'location': 'Greenhouse A',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Load image history when the page initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateFilteredImages();
+    });
+  }
+
+  void _updateFilteredImages() {
+    final imageHistoryProvider = Provider.of<ImageHistoryProvider>(
+      context,
+      listen: false,
+    );
+    
+    setState(() {
+      switch (_selectedTab) {
+        case 'Healthy':
+          _filteredImages = imageHistoryProvider.healthyImages;
+          break;
+        case 'Disease Detected':
+          _filteredImages = imageHistoryProvider.getImagesByStatus('Disease Detected');
+          break;
+        case 'Processing':
+          _filteredImages = imageHistoryProvider.getImagesByStatus('Processing');
+          break;
+        default:
+          _filteredImages = imageHistoryProvider.imageHistory;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
+    return Consumer2<ThemeProvider, ImageHistoryProvider>(
+      builder: (context, themeProvider, imageHistoryProvider, child) {
         return Scaffold(
           backgroundColor: themeProvider.backgroundColor,
           appBar: AppBar(
@@ -104,12 +85,11 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
             children: [
               _buildTabBar(themeProvider),
               Expanded(
-                child:
-                    _filteredImages.isEmpty
-                        ? _buildEmptyState(themeProvider)
-                        : _isGridView
-                        ? _buildGridView(themeProvider)
-                        : _buildListView(themeProvider),
+                child: _filteredImages.isEmpty
+                    ? _buildEmptyState(themeProvider)
+                    : _isGridView
+                    ? _buildGridView(themeProvider)
+                    : _buildListView(themeProvider),
               ),
             ],
           ),
@@ -118,63 +98,48 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
     );
   }
 
-  List<Map<String, dynamic>> get _filteredImages {
-    if (_selectedTab == 'All') return _imageHistory;
-    if (_selectedTab == 'Healthy') {
-      return _imageHistory
-          .where((item) => item['status'] == 'Healthy')
-          .toList();
-    }
-    if (_selectedTab == 'Diseased') {
-      return _imageHistory
-          .where((item) => item['status'] == 'Disease Detected')
-          .toList();
-    }
-    return _imageHistory;
-  }
-
   Widget _buildTabBar(ThemeProvider themeProvider) {
-    final tabs = ['All', 'Healthy', 'Diseased'];
+    final tabs = ['All', 'Healthy', 'Disease Detected'];
 
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
-        children:
-            tabs.map((tab) {
-              final isSelected = _selectedTab == tab;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _selectedTab = tab),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color:
-                          isSelected
-                              ? Colors.green
-                              : themeProvider.backgroundColor,
-                      border: Border.all(
-                        color:
-                            isSelected
-                                ? Colors.green
-                                : themeProvider.borderColor,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      tab,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color:
-                            isSelected ? Colors.white : themeProvider.textColor,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
+        children: tabs.map((tab) {
+          final isSelected = _selectedTab == tab;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() => _selectedTab = tab);
+                _updateFilteredImages();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.green
+                      : themeProvider.backgroundColor,
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.green
+                        : themeProvider.borderColor,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  tab,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : themeProvider.textColor,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
-              );
-            }).toList(),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -254,7 +219,7 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
   }
 
   Widget _buildGridItem(
-    Map<String, dynamic> item,
+    ImageHistoryItem item,
     ThemeProvider themeProvider,
   ) {
     return GestureDetector(
@@ -270,64 +235,35 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
           children: [
             Expanded(
               flex: 3,
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                      child: Image.asset(
-                        item['image'],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[200],
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: item.imageFile != null
+                      ? Image.file(
+                          item.imageFile!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[300],
                             child: const Icon(
-                              Icons.image_not_supported,
+                              Icons.broken_image,
                               color: Colors.grey,
-                              size: 40,
+                              size: 32,
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            item['status'] == 'Healthy'
-                                ? Colors.green
-                                : Colors.red,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        item['status'] == 'Healthy' ? 'Healthy' : 'Disease',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(
+                            Icons.image,
+                            color: Colors.grey,
+                            size: 32,
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             Expanded(
@@ -338,45 +274,39 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item['disease'] ?? 'Healthy Plant',
+                      '${item.capturedAt.day}/${item.capturedAt.month}/${item.capturedAt.year}',
                       style: TextStyle(
                         color: themeProvider.textColor,
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '${item['date']} ${item['time']}',
-                      style: TextStyle(
-                        color: themeProvider.secondaryTextColor,
-                        fontSize: 10,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(item.status),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        item.status,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
+                    if (item.confidence != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '${item.confidence!.toStringAsFixed(1)}%',
+                        style: TextStyle(
                           color: themeProvider.secondaryTextColor,
-                          size: 12,
+                          fontSize: 11,
                         ),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          child: Text(
-                            item['location'],
-                            style: TextStyle(
-                              color: themeProvider.secondaryTextColor,
-                              fontSize: 10,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -388,7 +318,7 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
   }
 
   Widget _buildListItem(
-    Map<String, dynamic> item,
+    ImageHistoryItem item,
     ThemeProvider themeProvider,
   ) {
     return Container(
@@ -410,20 +340,27 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                item['image'],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.image_not_supported,
-                      color: Colors.grey,
-                      size: 30,
+              child: item.imageFile != null
+                  ? Image.file(
+                      item.imageFile!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[200],
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                          size: 30,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: Colors.grey[200],
+                      child: const Icon(
+                        Icons.image,
+                        color: Colors.grey,
+                        size: 30,
+                      ),
                     ),
-                  );
-                },
-              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -435,7 +372,7 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        item['disease'] ?? 'Healthy Plant',
+                        item.disease ?? 'Healthy Plant',
                         style: TextStyle(
                           color: themeProvider.textColor,
                           fontSize: 16,
@@ -449,14 +386,11 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            item['status'] == 'Healthy'
-                                ? Colors.green
-                                : Colors.red,
+                        color: _getStatusColor(item.status),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        item['status'] == 'Healthy' ? 'Healthy' : 'Disease',
+                        item.status,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -476,7 +410,7 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${item['date']} ${item['time']}',
+                      '${item.capturedAt.day}/${item.capturedAt.month}/${item.capturedAt.year} ${item.capturedAt.hour}:${item.capturedAt.minute.toString().padLeft(2, '0')}',
                       style: TextStyle(
                         color: themeProvider.secondaryTextColor,
                         fontSize: 14,
@@ -485,36 +419,39 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      color: themeProvider.secondaryTextColor,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        item['location'],
-                        style: TextStyle(
-                          color: themeProvider.secondaryTextColor,
-                          fontSize: 14,
+                if (item.location != null) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        color: themeProvider.secondaryTextColor,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          item.location!,
+                          style: TextStyle(
+                            color: themeProvider.secondaryTextColor,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Row(
                   children: [
-                    Text(
-                      'Confidence: ${item['confidence']}%',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    if (item.confidence != null)
+                      Text(
+                        'Confidence: ${item.confidence!.toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => _showImageDetail(item, themeProvider),
@@ -534,124 +471,153 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
     );
   }
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'healthy':
+        return Colors.green;
+      case 'disease detected':
+        return Colors.red;
+      case 'processing':
+        return Colors.orange;
+      case 'analysis failed':
+        return Colors.grey;
+      default:
+        return Colors.blue;
+    }
+  }
+
   void _showImageDetail(
-    Map<String, dynamic> item,
+    ImageHistoryItem item,
     ThemeProvider themeProvider,
   ) {
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: themeProvider.cardColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      builder: (context) => Dialog(
+        backgroundColor: themeProvider.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Image Detail',
-                        style: TextStyle(
-                          color: themeProvider.textColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close, color: themeProvider.textColor),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        item['image'],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[200],
-                            child: const Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey,
-                              size: 60,
-                            ),
-                          );
-                        },
-                      ),
+                  Text(
+                    'Image Detail',
+                    style: TextStyle(
+                      color: themeProvider.textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow('Status', item['status'], themeProvider),
-                  if (item['disease'] != null)
-                    _buildDetailRow('Disease', item['disease'], themeProvider),
-                  _buildDetailRow(
-                    'Confidence',
-                    '${item['confidence']}%',
-                    themeProvider,
-                  ),
-                  _buildDetailRow('Date', item['date'], themeProvider),
-                  _buildDetailRow('Time', item['time'], themeProvider),
-                  _buildDetailRow('Location', item['location'], themeProvider),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _shareImage(item);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.green),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Share',
-                            style: TextStyle(color: Colors.green),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _deleteImage(item, themeProvider);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close, color: themeProvider.textColor),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 16),
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: item.imageFile != null
+                      ? Image.file(
+                          item.imageFile!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                              size: 60,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.image,
+                            color: Colors.grey,
+                            size: 60,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow('Status', item.status, themeProvider),
+              if (item.disease != null)
+                _buildDetailRow('Disease', item.disease!, themeProvider),
+              if (item.confidence != null)
+                _buildDetailRow(
+                  'Confidence',
+                  '${item.confidence!.toStringAsFixed(1)}%',
+                  themeProvider,
+                ),
+              _buildDetailRow(
+                'Date',
+                '${item.capturedAt.day}/${item.capturedAt.month}/${item.capturedAt.year}',
+                themeProvider,
+              ),
+              _buildDetailRow(
+                'Time',
+                '${item.capturedAt.hour}:${item.capturedAt.minute.toString().padLeft(2, '0')}',
+                themeProvider,
+              ),
+              if (item.location != null)
+                _buildDetailRow('Location', item.location!, themeProvider),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _shareImage(item);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.green),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Share',
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _deleteImage(item, themeProvider);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
@@ -696,112 +662,110 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Options',
-                  style: TextStyle(
-                    color: themeProvider.textColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ListTile(
-                  leading: const Icon(Icons.download, color: Colors.blue),
-                  title: Text(
-                    'Export All',
-                    style: TextStyle(color: themeProvider.textColor),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _exportImages();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.delete_sweep, color: Colors.red),
-                  title: Text(
-                    'Clear All',
-                    style: TextStyle(color: themeProvider.textColor),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _clearAllImages(themeProvider);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.filter_list, color: Colors.orange),
-                  title: Text(
-                    'Filter Options',
-                    style: TextStyle(color: themeProvider.textColor),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showFilterOptions(themeProvider);
-                  },
-                ),
-              ],
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Options',
+              style: TextStyle(
+                color: themeProvider.textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.download, color: Colors.blue),
+              title: Text(
+                'Export All',
+                style: TextStyle(color: themeProvider.textColor),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _exportImages();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_sweep, color: Colors.red),
+              title: Text(
+                'Clear All',
+                style: TextStyle(color: themeProvider.textColor),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _clearAllImages(themeProvider);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.filter_list, color: Colors.orange),
+              title: Text(
+                'Filter Options',
+                style: TextStyle(color: themeProvider.textColor),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showFilterOptions(themeProvider);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  void _shareImage(Map<String, dynamic> item) {
+  void _shareImage(ImageHistoryItem item) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Sharing image: ${item['disease'] ?? 'Healthy Plant'}'),
+        content: Text('Sharing image: ${item.disease ?? 'Healthy Plant'}'),
         backgroundColor: Colors.green,
       ),
     );
   }
 
-  void _deleteImage(Map<String, dynamic> item, ThemeProvider themeProvider) {
+  void _deleteImage(ImageHistoryItem item, ThemeProvider themeProvider) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeProvider.cardColor,
-            title: Text(
-              'Delete Image',
-              style: TextStyle(color: themeProvider.textColor),
-            ),
-            content: Text(
-              'Are you sure you want to delete this image?',
+      builder: (context) => AlertDialog(
+        backgroundColor: themeProvider.cardColor,
+        title: Text(
+          'Delete Image',
+          style: TextStyle(color: themeProvider.textColor),
+        ),
+        content: Text(
+          'Are you sure you want to delete this image?',
+          style: TextStyle(color: themeProvider.secondaryTextColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
               style: TextStyle(color: themeProvider.secondaryTextColor),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: themeProvider.secondaryTextColor),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _imageHistory.removeWhere((img) => img['id'] == item['id']);
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Image deleted successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () {
+              final imageHistoryProvider = Provider.of<ImageHistoryProvider>(
+                context,
+                listen: false,
+              );
+              imageHistoryProvider.deleteImage(item.id);
+              Navigator.pop(context);
+              _updateFilteredImages(); // Refresh the list
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Image deleted successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -817,46 +781,48 @@ class _ImageHistoryPageState extends State<ImageHistoryPage> {
   void _clearAllImages(ThemeProvider themeProvider) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeProvider.cardColor,
-            title: Text(
-              'Clear All Images',
-              style: TextStyle(color: themeProvider.textColor),
-            ),
-            content: Text(
-              'Are you sure you want to delete all images? This action cannot be undone.',
+      builder: (context) => AlertDialog(
+        backgroundColor: themeProvider.cardColor,
+        title: Text(
+          'Clear All Images',
+          style: TextStyle(color: themeProvider.textColor),
+        ),
+        content: Text(
+          'Are you sure you want to delete all images? This action cannot be undone.',
+          style: TextStyle(color: themeProvider.secondaryTextColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
               style: TextStyle(color: themeProvider.secondaryTextColor),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: themeProvider.secondaryTextColor),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _imageHistory.clear();
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('All images cleared successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text(
-                  'Clear All',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () {
+              final imageHistoryProvider = Provider.of<ImageHistoryProvider>(
+                context,
+                listen: false,
+              );
+              imageHistoryProvider.clearHistory();
+              Navigator.pop(context);
+              _updateFilteredImages(); // Refresh the list
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('All images cleared successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text(
+              'Clear All',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

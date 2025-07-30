@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/screens/payment_screens/successfulpayment.dart';
 import '/ui/models/product_model.dart';
+import '/ui/models/cart_item_model.dart';
 import '/providers/currency_provider.dart';
 import '/services/mtn_momo_service.dart';
 import '/providers/theme_provider.dart';
@@ -10,11 +11,17 @@ import '/wishlist_page.dart';
 import '/screens/profile/profile_page.dart';
 import '/screens/home_page.dart';
 
-
 class RwandaPaymentScreen extends StatefulWidget {
   final ProductModel? product;
+  final List<CartItemModel>? cartItems;
+  final double? cartTotal;
 
-  const RwandaPaymentScreen({super.key, this.product});
+  const RwandaPaymentScreen({
+    super.key,
+    this.product,
+    this.cartItems,
+    this.cartTotal,
+  });
 
   @override
   State<RwandaPaymentScreen> createState() => _RwandaPaymentScreenState();
@@ -28,7 +35,47 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
   String _userPhoneNumber = '';
   String? _transactionId;
   String? _paymentMessage;
-  int _currentIndex = 0; // Add this line to define _currentIndex
+  final int _currentIndex = 0;
+
+  // Helper method to get the total amount
+  double get totalAmount {
+    if (widget.cartTotal != null) {
+      return widget.cartTotal!;
+    }
+    return widget.product?.price ?? 0.0;
+  }
+
+  // Helper method to get the product name/description
+  String get paymentDescription {
+    if (widget.cartItems != null && widget.cartItems!.isNotEmpty) {
+      if (widget.cartItems!.length == 1) {
+        return widget.cartItems!.first.product.name;
+      } else {
+        return 'Cart Order (${widget.cartItems!.length} items)';
+      }
+    }
+    return widget.product?.name ?? 'Unknown Product';
+  }
+
+  // Helper method to get category description
+  String get categoryDescription {
+    if (widget.cartItems != null && widget.cartItems!.isNotEmpty) {
+      if (widget.cartItems!.length == 1) {
+        return widget.cartItems!.first.product.category;
+      } else {
+        return '${widget.cartItems!.length} items in cart';
+      }
+    }
+    return widget.product?.category ?? 'Product';
+  }
+
+  // Helper method to get the first image for display
+  String get displayImage {
+    if (widget.cartItems != null && widget.cartItems!.isNotEmpty) {
+      return widget.cartItems!.first.product.image;
+    }
+    return widget.product?.image ?? '';
+  }
 
   @override
   void dispose() {
@@ -53,7 +100,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
         );
 
         // Convert price to RWF if it's in a different currency
-        double priceInRWF = widget.product?.price ?? 0.0;
+        double priceInRWF = totalAmount;
 
         // If the selected currency is not RWF, we need to convert back to RWF for the API
         if (currencyProvider.selectedCurrency != 'RWF') {
@@ -61,7 +108,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
           double rate = currencyProvider.getCurrentRate(
             currencyProvider.selectedCurrency,
           );
-          priceInRWF = (widget.product?.price ?? 0.0) / rate;
+          priceInRWF = totalAmount / rate;
         }
 
         // Call MTN MoMo API
@@ -69,7 +116,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
           customerPhoneNumber: phone,
           amount: priceInRWF,
           currency: 'RWF',
-          productName: widget.product?.name ?? 'Product',
+          productName: paymentDescription,
         );
 
         setState(() {
@@ -192,7 +239,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                 child: Column(
                   children: [
                     Text(
-                      widget.product?.name ?? 'Product',
+                      paymentDescription,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -202,12 +249,10 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                     ),
                     SizedBox(height: 8),
                     FutureBuilder<String>(
-                      future: widget.product != null
-                          ? currencyProvider.formatPrice(widget.product!.price)
-                          : Future.value('0.00'),
+                      future: currencyProvider.formatPrice(totalAmount),
                       builder: (context, snapshot) {
                         return Text(
-                          'Amount: ${snapshot.data ?? currencyProvider.formatPriceSync(widget.product?.price ?? 0.0)}',
+                          'Amount: ${snapshot.data ?? currencyProvider.formatPriceSync(totalAmount)}',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -384,7 +429,8 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                 SizedBox(height: 20),
 
                 // Product Preview Section
-                if (widget.product != null)
+                if (widget.product != null ||
+                    (widget.cartItems != null && widget.cartItems!.isNotEmpty))
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(16.0),
@@ -405,7 +451,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(
-                              widget.product!.image,
+                              displayImage,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Icon(Icons.image, color: Colors.grey),
@@ -419,7 +465,7 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.product!.name,
+                                paymentDescription,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -431,13 +477,13 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                               SizedBox(height: 4),
                               FutureBuilder<String>(
                                 future: currencyProvider.formatPrice(
-                                  widget.product!.price,
+                                  totalAmount,
                                 ),
                                 builder: (context, snapshot) {
                                   return Text(
                                     snapshot.data ??
                                         currencyProvider.formatPriceSync(
-                                          widget.product!.price,
+                                          totalAmount,
                                         ),
                                     style: TextStyle(
                                       fontSize: 18,
@@ -467,36 +513,31 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                   child: Column(
                     children: [
                       // Product Name
-                      _buildDetailRow(
-                        'Product',
-                        widget.product?.name ?? 'Unknown Product',
-                      ),
+                      _buildDetailRow('Product', paymentDescription),
                       SizedBox(height: 16),
                       FutureBuilder<String>(
-                        future: widget.product != null
-                            ? currencyProvider.formatPrice(
-                                widget.product!.price,
-                              )
-                            : Future.value('0.00'),
+                        future: currencyProvider.formatPrice(totalAmount),
                         builder: (context, snapshot) {
                           return _buildDetailRow(
                             'Price Amount',
                             snapshot.data ??
-                                currencyProvider.formatPriceSync(
-                                  widget.product?.price ?? 0.0,
-                                ),
+                                currencyProvider.formatPriceSync(totalAmount),
                           );
                         },
                       ),
                       SizedBox(height: 16),
                       _buildDetailRow(
                         'Category',
-                        _formatCategory(widget.product?.category ?? 'Product'),
+                        _formatCategory(categoryDescription),
                       ),
                       SizedBox(height: 16),
                       _buildDetailRow(
                         'Rating',
-                        '${widget.product?.rating.toStringAsFixed(1) ?? '0.0'} ⭐',
+                        widget.cartItems != null && widget.cartItems!.isNotEmpty
+                            ? widget.cartItems!.length == 1
+                                  ? '${widget.cartItems!.first.product.rating.toStringAsFixed(1)} ⭐'
+                                  : 'Mixed ratings'
+                            : '${widget.product?.rating.toStringAsFixed(1) ?? '0.0'} ⭐',
                       ),
                       SizedBox(height: 16),
                       _buildDetailRow('Delivery', '3 - 4 Days'),
@@ -850,14 +891,10 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
                         ),
                         child: Center(
                           child: FutureBuilder<String>(
-                            future: widget.product != null
-                                ? currencyProvider.formatPrice(
-                                    widget.product!.price,
-                                  )
-                                : Future.value('0.00'),
+                            future: currencyProvider.formatPrice(totalAmount),
                             builder: (context, snapshot) {
                               return Text(
-                                'Total amount : ${snapshot.data ?? currencyProvider.formatPriceSync(widget.product?.price ?? 0.0)}',
+                                'Total amount : ${snapshot.data ?? currencyProvider.formatPriceSync(totalAmount)}',
                                 style: TextStyle(
                                   fontSize: 27,
                                   fontWeight: FontWeight.w500,
@@ -935,7 +972,9 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
         ),
       ),
       // Move bottomNavigationBar here
-      bottomNavigationBar: _buildBottomNavigationBar(Provider.of<ThemeProvider>(context)),
+      bottomNavigationBar: _buildBottomNavigationBar(
+        Provider.of<ThemeProvider>(context),
+      ),
     );
   }
 
@@ -1001,13 +1040,6 @@ class _RwandaPaymentScreenState extends State<RwandaPaymentScreen> {
         ],
       ),
     );
-  }
-
-  void _onTabTapped(int index) {
-    if (_currentIndex == index) return; // Prevent re-tapping the same tab
-    setState(() {
-      _currentIndex = index;
-    });
   }
 
   Widget _buildBottomNavigationBar(ThemeProvider themeProvider) {

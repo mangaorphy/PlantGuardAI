@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'ui/models/product_model.dart';
 import 'providers/currency_provider.dart';
 import 'providers/wishlist_provider.dart';
+import 'providers/cart_provider.dart';
 import 'screens/home_page.dart';
 import 'wishlist_page.dart';
+import 'cart_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/payment_screens/rwanda_payment.dart';
 
@@ -445,9 +447,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-      
+
             const SizedBox(height: 12),
-      
+
             // Product Name
             Text(
               widget.product.name,
@@ -457,9 +459,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-      
+
             const SizedBox(height: 12),
-      
+
             // Product Description
             Text(
               widget.product.description,
@@ -469,9 +471,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 height: 1.5,
               ),
             ),
-      
+
             const SizedBox(height: 16),
-      
+
             // Rating and Orders
             Row(
               children: [
@@ -643,20 +645,35 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  void _addToCart() {
-    // Remove unused variable
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.product.name} added to cart'),
-        backgroundColor: Colors.green,
-        action: SnackBarAction(
-          label: 'View Cart',
-          onPressed: () {
-            // Navigate to cart
-          },
+  void _addToCart() async {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    try {
+      await cartProvider.addToCart(widget.product);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${widget.product.name} added to cart'),
+          backgroundColor: Colors.green,
+          action: SnackBarAction(
+            label: 'View Cart',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartPage()),
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error adding to cart: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _buyNow() {

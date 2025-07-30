@@ -5,14 +5,15 @@ import 'dart:io';
 import '../../providers/user_provider.dart';
 import '../../providers/currency_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/cart_provider.dart';
+import '../../providers/order_provider.dart';
+import '../../ui/models/order_model.dart';
 import '../../wishlist_page.dart';
 import '/screens/home_page.dart';
 import 'edit_profile_page.dart';
-import 'settings_page.dart';
+import 'enhanced_settings_page.dart';
 import '../../cart_page.dart';
 import '../../image_history_page.dart';
-import '../../recent_search_page.dart';
-import 'address_management_page.dart';
 import 'customer_center_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -32,6 +33,10 @@ class _ProfilePageState extends State<ProfilePage> {
       if (userProvider.user == null) {
         userProvider.initializeUser();
       }
+
+      // Ensure no demo orders are showing - remove any static data
+      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+      orderProvider.removeDemoOrders(); // Remove any demo orders
     });
   }
 
@@ -76,62 +81,17 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: _showLanguageSelector,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Consumer<UserProvider>(
-                builder: (context, userProvider, child) {
-                  return Row(
-                    children: [
-                      Text(
-                        userProvider.currentLanguage,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
+          // Removed language selector
+          SizedBox(width: 1), // Placeholder to maintain layout
           Row(
             children: [
-              GestureDetector(
-                onTap: _openQRScanner,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.qr_code_scanner,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
+              // Removed QR Scanner
               GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SettingsPage(),
+                      builder: (context) => const EnhancedSettingsPage(),
                     ),
                   );
                 },
@@ -174,26 +134,25 @@ class _ProfilePageState extends State<ProfilePage> {
                         border: Border.all(color: Colors.green, width: 2),
                       ),
                       child: ClipOval(
-                        child:
-                            userProvider.profileImageFile != null
-                                ? Image.file(
-                                  userProvider.profileImageFile!,
-                                  fit: BoxFit.cover,
-                                )
-                                : Image.asset(
-                                  'assets/images/Rectangle 42.png',
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey[700],
-                                      child: const Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                    );
-                                  },
-                                ),
+                        child: userProvider.profileImageFile != null
+                            ? Image.file(
+                                userProvider.profileImageFile!,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                'assets/images/Rectangle 42.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey[700],
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  );
+                                },
+                              ),
                       ),
                     ),
                     Positioned(
@@ -316,15 +275,8 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               _buildOrderStatusItem(
                 Icons.local_shipping,
-                'Shipping\nFeedback',
-                hasNotification: true,
+                'Shipping',
                 onTap: () => _showOrderStatus('Shipping'),
-                themeProvider: themeProvider,
-              ),
-              _buildOrderStatusItem(
-                Icons.star_rate,
-                'Rate &\nReview',
-                onTap: () => _showOrderStatus('Rate & Review'),
                 themeProvider: themeProvider,
               ),
             ],
@@ -420,22 +372,6 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           }, themeProvider),
           _buildMenuDivider(themeProvider),
-          _buildMenuItemWithImages(Icons.search, 'Recently Searched', () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RecentSearchPage()),
-            );
-          }, themeProvider),
-          _buildMenuDivider(themeProvider),
-          _buildMenuItem(Icons.location_on, 'Address Management', () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddressManagementPage(),
-              ),
-            );
-          }, themeProvider),
-          _buildMenuDivider(themeProvider),
           _buildMenuItem(Icons.headset_mic, 'Customer Center', () {
             Navigator.push(
               context,
@@ -443,14 +379,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 builder: (context) => const CustomerCenterPage(),
               ),
             );
-          }, themeProvider),
-          _buildMenuDivider(themeProvider),
-          _buildMenuItem(Icons.person_add, 'Invite Friend', () {
-            _showInviteFriend();
-          }, themeProvider),
-          _buildMenuDivider(themeProvider),
-          _buildMenuItem(Icons.chat, 'Friend Code', () {
-            _showFriendCode();
           }, themeProvider),
         ],
       ),
@@ -672,126 +600,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _openQRScanner() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return AlertDialog(
-                backgroundColor: themeProvider.cardColor,
-                title: Text(
-                  'QR Code Scanner',
-                  style: TextStyle(color: themeProvider.textColor),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.qr_code_scanner,
-                      color: Colors.green,
-                      size: 64,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Camera access required to scan QR codes',
-                      style: TextStyle(color: themeProvider.secondaryTextColor),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(color: themeProvider.secondaryTextColor),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('QR Scanner would open here'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text(
-                      'Open Scanner',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-    );
-  }
-
-  void _showLanguageSelector() {
-    final languages = ['English', 'Kinyarwanda', 'French', 'Swahili'];
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Consumer<ThemeProvider>(
-          builder: (context, themeProvider, child) {
-            return Container(
-              color: themeProvider.cardColor,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Select Language',
-                    style: TextStyle(
-                      color: themeProvider.textColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ...languages.map((language) {
-                    return ListTile(
-                      leading: const Icon(Icons.language, color: Colors.green),
-                      title: Text(
-                        language,
-                        style: TextStyle(color: themeProvider.textColor),
-                      ),
-                      trailing:
-                          language == 'English'
-                              ? const Icon(Icons.check, color: Colors.green)
-                              : null,
-                      onTap: () {
-                        final userProvider = Provider.of<UserProvider>(
-                          context,
-                          listen: false,
-                        );
-                        userProvider.setLanguage(language);
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Language changed to $language'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      },
-                    );
-                  }),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   void _showOrderStatus(String statusType) {
     final statusData = _getOrderStatusData(statusType);
 
@@ -828,6 +636,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       itemCount: statusData['orders'].length,
                       itemBuilder: (context, index) {
                         final order = statusData['orders'][index];
+                        final isCartItem = order['id'].toString().startsWith(
+                          'CART_',
+                        );
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
@@ -835,82 +647,173 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: themeProvider.backgroundColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
+                          child: Column(
                             children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.green[700],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.local_pharmacy,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      order['name'],
-                                      style: TextStyle(
-                                        color: themeProvider.textColor,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Order #${order['id']}',
-                                      style: TextStyle(
-                                        color: themeProvider.secondaryTextColor,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Consumer<CurrencyProvider>(
-                                      builder: (
-                                        context,
-                                        currencyProvider,
-                                        child,
-                                      ) {
-                                        return Text(
-                                          currencyProvider.formatPriceSync(
-                                            order['price'].toDouble(),
-                                          ),
-                                          style: const TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Column(
+                              Row(
                                 children: [
-                                  Text(
-                                    order['status'],
-                                    style: TextStyle(
-                                      color: _getStatusColor(order['status']),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                  // Product Image
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[700],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: order['image'] != null
+                                          ? Image.network(
+                                              order['image'],
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Icon(
+                                                    Icons.local_pharmacy,
+                                                    color: Colors.white,
+                                                    size: 30,
+                                                  ),
+                                            )
+                                          : const Icon(
+                                              Icons.local_pharmacy,
+                                              color: Colors.white,
+                                              size: 30,
+                                            ),
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  _buildOrderActionButton(
-                                    statusType,
-                                    order,
-                                    themeProvider,
+                                  const SizedBox(width: 16),
+                                  // Product Info
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          order['name'],
+                                          style: TextStyle(
+                                            color: themeProvider.textColor,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${isCartItem ? 'Cart Item' : 'Order'} #${order['id']}',
+                                          style: TextStyle(
+                                            color: themeProvider
+                                                .secondaryTextColor,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Consumer<CurrencyProvider>(
+                                          builder:
+                                              (
+                                                context,
+                                                currencyProvider,
+                                                child,
+                                              ) {
+                                                return Text(
+                                                  currencyProvider
+                                                      .formatPriceSync(
+                                                        order['price']
+                                                            .toDouble(),
+                                                      ),
+                                                  style: const TextStyle(
+                                                    color: Colors.green,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                );
+                                              },
+                                        ),
+                                        // Show quantity for cart items
+                                        if (isCartItem &&
+                                            order['quantity'] != null)
+                                          Text(
+                                            'Qty: ${order['quantity']}',
+                                            style: TextStyle(
+                                              color: themeProvider
+                                                  .secondaryTextColor,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        order['status'],
+                                        style: TextStyle(
+                                          color: _getStatusColor(
+                                            order['status'],
+                                          ),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _buildOrderActionButton(
+                                        statusType,
+                                        order,
+                                        themeProvider,
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
+                              // Show additional info for paid orders
+                              if (order['paidAt'] != null ||
+                                  order['paymentId'] != null)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 12),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.payment,
+                                        color: Colors.green,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if (order['paymentId'] != null)
+                                              Text(
+                                                'Payment ID: ${order['paymentId']}',
+                                                style: TextStyle(
+                                                  color:
+                                                      themeProvider.textColor,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            if (order['paidAt'] != null)
+                                              Text(
+                                                'Paid: ${_formatDate(order['paidAt'])}',
+                                                style: TextStyle(
+                                                  color: themeProvider
+                                                      .secondaryTextColor,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                         );
@@ -927,79 +830,84 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Map<String, dynamic> _getOrderStatusData(String statusType) {
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
     switch (statusType) {
       case 'Pending Payment':
+        // Show items in cart that need payment
+        final cartOrders = cartProvider.items
+            .map(
+              (cartItem) => {
+                'id': 'CART_${cartItem.id}',
+                'name': cartItem.product.name,
+                'price': cartItem.totalPrice,
+                'status': 'Payment Due',
+                'quantity': cartItem.quantity,
+                'image': cartItem.product.image,
+                'category': cartItem.product.category,
+              },
+            )
+            .toList();
+
+        // Also include actual pending payment orders
+        final pendingOrders = orderProvider.pendingPaymentOrders
+            .map(
+              (order) => {
+                'id': order.id,
+                'name': order.items.length == 1
+                    ? order.items.first.productName
+                    : '${order.items.length} items',
+                'price': order.totalAmount,
+                'status': order.status.displayName,
+                'orderDate': order.orderDate,
+                'items': order.items,
+              },
+            )
+            .toList();
+
         return {
           'icon': Icons.access_time,
-          'orders': [
-            {
-              'id': '12345',
-              'name': 'Megha Star',
-              'price': 40000.0,
-              'status': 'Payment Due',
-            },
-            {
-              'id': '12346',
-              'name': 'Plant Protection Kit',
-              'price': 25000.0,
-              'status': 'Payment Due',
-            },
-          ],
+          'orders': [...cartOrders, ...pendingOrders],
         };
+
       case 'To Ship':
-        return {
-          'icon': Icons.inventory_2,
-          'orders': [
-            {
-              'id': '12347',
-              'name': 'Bio Fertilizer',
-              'price': 15000.0,
-              'status': 'Packing',
-            },
-            {
-              'id': '12348',
-              'name': 'Pest Control',
-              'price': 30000.0,
-              'status': 'Ready to Ship',
-            },
-          ],
-        };
+        final toShipOrders = orderProvider.toShipOrders
+            .map(
+              (order) => {
+                'id': order.id,
+                'name': order.items.length == 1
+                    ? order.items.first.productName
+                    : '${order.items.length} items',
+                'price': order.totalAmount,
+                'status': order.status.displayName,
+                'paidAt': order.paidAt,
+                'paymentId': order.paymentId,
+                'items': order.items,
+              },
+            )
+            .toList();
+
+        return {'icon': Icons.inventory_2, 'orders': toShipOrders};
+
       case 'Shipping':
-        return {
-          'icon': Icons.local_shipping,
-          'orders': [
-            {
-              'id': '12349',
-              'name': 'Growth Enhancer',
-              'price': 20000.0,
-              'status': 'In Transit',
-            },
-            {
-              'id': '12350',
-              'name': 'Soil Treatment',
-              'price': 35000.0,
-              'status': 'Out for Delivery',
-            },
-          ],
-        };
-      case 'Rate & Review':
-        return {
-          'icon': Icons.star_rate,
-          'orders': [
-            {
-              'id': '12351',
-              'name': 'Organic Pesticide',
-              'price': 18000.0,
-              'status': 'Delivered',
-            },
-            {
-              'id': '12352',
-              'name': 'Plant Nutrients',
-              'price': 22000.0,
-              'status': 'Delivered',
-            },
-          ],
-        };
+        final shippingOrders = orderProvider.shippingOrders
+            .map(
+              (order) => {
+                'id': order.id,
+                'name': order.items.length == 1
+                    ? order.items.first.productName
+                    : '${order.items.length} items',
+                'price': order.totalAmount,
+                'status': order.status.displayName,
+                'shippedAt': order.shippedAt,
+                'items': order.items,
+              },
+            )
+            .toList();
+
+        return {'icon': Icons.local_shipping, 'orders': shippingOrders};
+
       default:
         return {'icon': Icons.shopping_bag, 'orders': []};
     }
@@ -1011,14 +919,33 @@ class _ProfilePageState extends State<ProfilePage> {
         return Colors.orange;
       case 'Packing':
       case 'Ready to Ship':
+      case 'Paid':
         return Colors.blue;
       case 'In Transit':
       case 'Out for Delivery':
+      case 'Shipped':
         return Colors.green;
       case 'Delivered':
         return Colors.green;
       default:
         return Colors.grey;
+    }
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'N/A';
+
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
     }
   }
 
@@ -1030,12 +957,19 @@ class _ProfilePageState extends State<ProfilePage> {
     String buttonText;
     Color buttonColor;
     VoidCallback onPressed;
+    final isCartItem = order['id'].toString().startsWith('CART_');
 
     switch (statusType) {
       case 'Pending Payment':
-        buttonText = 'Pay Now';
-        buttonColor = Colors.orange;
-        onPressed = () => _payForOrder(order);
+        if (isCartItem) {
+          buttonText = 'Checkout';
+          buttonColor = Colors.orange;
+          onPressed = () => _proceedToCartCheckout();
+        } else {
+          buttonText = 'Pay Now';
+          buttonColor = Colors.orange;
+          onPressed = () => _payForOrder(order);
+        }
         break;
       case 'To Ship':
         buttonText = 'Track';
@@ -1346,214 +1280,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showInviteFriend() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Consumer<ThemeProvider>(
-          builder: (context, themeProvider, child) {
-            return Container(
-              color: themeProvider.cardColor,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.person_add, color: Colors.green, size: 48),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Invite Friends',
-                    style: TextStyle(
-                      color: themeProvider.textColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Share PlantGuard AI with your friends and earn rewards!',
-                    style: TextStyle(
-                      color: themeProvider.secondaryTextColor,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: themeProvider.backgroundColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Your referral code: PLANT2024',
-                            style: TextStyle(
-                              color: themeProvider.textColor,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const Icon(Icons.copy, color: Colors.green),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.share),
-                          label: const Text('Share Link'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.message),
-                          label: const Text('Send SMS'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showFriendCode() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return AlertDialog(
-                backgroundColor: themeProvider.cardColor,
-                title: Text(
-                  'Friend Code',
-                  style: TextStyle(color: themeProvider.textColor),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: themeProvider.backgroundColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          const Icon(
-                            Icons.qr_code,
-                            color: Colors.green,
-                            size: 64,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Your Friend Code',
-                            style: TextStyle(
-                              color: themeProvider.textColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'PLANT2024',
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Share this code with friends to connect',
-                            style: TextStyle(
-                              color: themeProvider.secondaryTextColor,
-                              fontSize: 12,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      style: TextStyle(color: themeProvider.textColor),
-                      decoration: InputDecoration(
-                        hintText: 'Enter friend code...',
-                        hintStyle: TextStyle(
-                          color: themeProvider.secondaryTextColor,
-                        ),
-                        filled: true,
-                        fillColor: themeProvider.backgroundColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.add, color: Colors.green),
-                          onPressed: () {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Friend added successfully!'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Close',
-                      style: TextStyle(color: themeProvider.secondaryTextColor),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Friend code copied to clipboard'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text(
-                      'Copy Code',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-    );
-  }
-
   void _payForOrder(Map<String, dynamic> order) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1571,6 +1297,13 @@ class _ProfilePageState extends State<ProfilePage> {
           },
         ),
       ),
+    );
+  }
+
+  void _proceedToCartCheckout() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CartPage()),
     );
   }
 

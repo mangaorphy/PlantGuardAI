@@ -156,6 +156,28 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Update currency
+  void setCurrency(String currency) {
+    if (_user != null) {
+      _user = _user!.copyWith(currency: currency);
+    }
+    notifyListeners();
+  }
+
+  // Update theme
+  void setTheme(String theme) {
+    if (_user != null) {
+      _user = _user!.copyWith(theme: theme);
+    }
+    notifyListeners();
+  }
+
+  // Update user with new data
+  void updateUser(UserModel updatedUser) {
+    _user = updatedUser;
+    notifyListeners();
+  }
+
   // Update notification settings
   void updateNotificationSettings({
     bool? pushNotifications,
