@@ -510,7 +510,7 @@ class _HomePageState extends State<HomePage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '\RWF${product.price.toStringAsFixed(2)}',
+                              '\$${product.price.toStringAsFixed(2)}',
                               style: TextStyle(
                                 color: Colors.green[700],
                                 fontWeight: FontWeight.bold,
@@ -935,7 +935,7 @@ class HomeContent extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '\RWF${product.price.toStringAsFixed(2)}',
+                          '\$${product.price.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: Colors.green[700],
                             fontWeight: FontWeight.bold,
@@ -1036,7 +1036,7 @@ class HomeContent extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '\RWF${product.price.toStringAsFixed(2)}',
+                              '\$${product.price.toStringAsFixed(2)}',
                               style: TextStyle(
                                 color: Colors.green[700],
                                 fontWeight: FontWeight.bold,
