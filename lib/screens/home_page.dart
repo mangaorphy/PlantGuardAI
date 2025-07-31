@@ -180,10 +180,7 @@ class _HomePageState extends State<HomePage> {
                 plantName: result['plantName'] ?? 'Unknown',
                 diseaseName: result['diseaseName'] ?? 'Unknown',
                 confidenceScore: confidence,
-                symptoms: RegExp(r"'([^']+)'")
-                    .allMatches(result['symptomsIdentified'] ?? '')
-                    .map((m) => m.group(1)!)
-                    .toList(),
+                symptoms: symptoms,
                 diseaseDescription: result['shortDiseaseDescrition'] ?? '',
                 imageFile: result['imageUrl'] ?? '',
               ),
